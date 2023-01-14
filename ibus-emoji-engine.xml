@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <name>xyz.gazatu.IBusEmojiEngine</name>
+  <description>EmojiPicker</description>
+  <version>0.1.0</version>
+  <license>MIT</license>
+  <author>GaZaTu &lt;gazatu@protonmail.com&gt;</author>
+  <homepage></homepage>
+  <exec>/usr/local/bin/ibus-test</exec>
+  <textdomain>ibus-emoji-engine</textdomain>
+  <engines>
+    <engine>
+      <name>ibus-emoji-engine</name>
+      <longname>ibus-emoji-engine</longname>
+      <description></description>
+      <language></language>
+      <license>MIT</license>
+      <author>GaZaTu &lt;gazatu@protonmail.com&gt;</author>
+      <icon></icon>
+      <layout>us</layout>
+      <layout_variant></layout_variant>
+      <layout_option></layout_option>
+      <hotkeys>&lt;Super&gt;period</hotkeys>
+      <symbol>🃏</symbol>
+      <setup></setup>
+      <version></version>
+      <textdomain></textdomain>
+      <rank>0</rank>
+    </engine>
+  </engines>
+</component>
