@@ -1,4 +1,7 @@
 #include <ibus.h>
+#include <memory>
+#include <qnamespace.h>
+#include <qtimer.h>
 #include <signal.h>
 
 #include "rime_engine.hpp"
@@ -71,6 +74,32 @@ void gui_main(int argc, char** argv) {
 
   QApplication app{argc, argv};
 
+  RimeWindow rime_window;
+
+  QTimer rime_command_processor;
+  QObject::connect(&rime_command_processor, &QTimer::timeout, [&rime_window]() {
+    std::shared_ptr<RimeCommand> _command;
+    if (rime_command_queue.pop(_command)) {
+      if (auto command = std::dynamic_pointer_cast<RimeCommandInit>(_command)) {
+        rime_window.commit_text = command->commit_text;
+      }
+      if (auto command = std::dynamic_pointer_cast<RimeCommandReset>(_command)) {
+        rime_window.reset();
+      }
+      if (auto command = std::dynamic_pointer_cast<RimeCommandSetCursorLocation>(_command)) {
+        rime_window.set_cursor_location(command->x, command->y, command->w, command->h);
+      }
+      if (auto command = std::dynamic_pointer_cast<RimeCommandProcessKeyEvent>(_command)) {
+        rime_window.process_key_event(command->keyval, command->keycode, command->modifiers);
+      }
+    }
+  });
+  rime_command_processor.start(5);
+
+  if (argc >= 2 && std::string{argv[1]} == "test") {
+    rime_window.show();
+  }
+
   log_printf("[debug] start gui_main\n");
   app.exec();
   log_printf("[debug] end gui_main\n");
@@ -83,39 +112,16 @@ int main(int argc, char** argv) {
   signal(SIGTERM, sigterm_cb);
   signal(SIGINT, sigterm_cb);
 
-  std::thread gui_thread{&gui_main, argc, argv};
+  if (argc >= 2 && std::string{argv[1]} == "test") {
+    gui_main(argc, argv);
+  } else {
+    std::thread gui_thread{&gui_main, argc, argv};
 
-  rime_with_ibus();
+    rime_with_ibus();
+  }
 
   fclose(log_file);
 
   return 0;
 }
-}
-
-void runInGUIThread(std::function<void()> callback) {
-  WorkerThread* thread = new WorkerThread();
-  thread->callback = std::move(callback);
-
-  thread->start();
-}
-
-void WorkerThread::run() {
-  QTimer* timer = new QTimer();
-  log_printf("runinguithread %ld -> %ld\n", timer->thread(), qApp->thread());
-
-  timer->moveToThread(qApp->thread());
-  timer->setSingleShot(true);
-
-  QObject::connect(timer, &QTimer::timeout, [timer, callback{std::move(callback)}]() {
-    log_printf("deleteLater 1\n");
-    timer->deleteLater();
-    log_printf("deleteLater 2\n");
-
-    callback();
-  });
-
-  QMetaObject::invokeMethod(timer, "start", Qt::QueuedConnection, Q_ARG(int, 0));
-
-  deleteLater();
 }

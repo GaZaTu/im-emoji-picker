@@ -49,6 +49,7 @@ include_directories(/usr/lib64/glib-2.0/include)
 set(COMMON_SRC_FILES
   src/rime_main.cpp
   src/rime_engine.cpp
+  src/rime_window.cpp
 )
 
 set(SRC_FILES

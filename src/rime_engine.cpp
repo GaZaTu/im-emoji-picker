@@ -1,6 +1,13 @@
 #include "rime_engine.hpp"
 #include "rime_main.hpp"
+#include "rime_window.hpp"
 #include <QMainWindow>
+#include <cctype>
+#include <memory>
+#include <qcoreapplication.h>
+#include <qeventloop.h>
+#include <qnamespace.h>
+#include <qtimer.h>
 #include <string>
 
 extern "C" {
@@ -12,10 +19,6 @@ struct _IBusRimeEngine {
 
   // IBusLookupTable* table;
   // IBusPropList* props;
-
-  QMainWindow* window;
-
-  std::string text;
 };
 
 struct _IBusRimeEngineClass {
@@ -78,13 +81,13 @@ static void ibus_rime_engine_init(IBusRimeEngine* rime_engine) {
   // rime_engine->props = ibus_prop_list_new();
   // g_object_ref_sink(rime_engine->props);
 
-  rime_engine->window = nullptr;
+  rime_command_queue.push(std::make_shared<RimeCommandInit>([rime_engine](const std::string& text) {
+    ibus_engine_commit_text((IBusEngine*)rime_engine, ibus_text_new_from_string(text.data()));
+  }));
 }
 
 static void ibus_rime_engine_destroy(IBusRimeEngine* rime_engine) {
   log_printf("[debug] ibus_rime_engine_destroy\n");
-
-  delete rime_engine->window;
 
   // if (rime_engine->table) {
   //   g_object_unref(rime_engine->table);
@@ -110,9 +113,7 @@ static void ibus_rime_engine_focus_out(IBusEngine* engine) {
 static void ibus_rime_engine_reset(IBusEngine* engine) {
   log_printf("[debug] ibus_rime_engine_reset\n");
 
-  IBusRimeEngine* rime_engine = (IBusRimeEngine*)engine;
-
-  rime_engine->text = "";
+  rime_command_queue.push(std::make_shared<RimeCommandReset>());
 }
 
 static void ibus_rime_engine_enable(IBusEngine* engine) {
@@ -345,33 +346,17 @@ static void ibus_rime_engine_disable(IBusEngine* engine) {
 static gboolean ibus_rime_engine_process_key_event(IBusEngine* engine, guint keyval, guint keycode, guint modifiers) {
   log_printf("[debug] ibus_rime_engine_process_key_event keyval:%c keycode:%d modifiers:%d\n", keyval, keycode, modifiers);
 
-  IBusRimeEngine* rime_engine = (IBusRimeEngine*)engine;
-
   if (modifiers & IBUS_SUPER_MASK) {
     return FALSE;
   }
 
-  if (modifiers & IBUS_RELEASE_MASK) {
-    return FALSE;
+  if (isascii(keyval) || keycode == KEYCODE_ESCAPE || keycode == KEYCODE_RETURN || keycode == KEYCODE_BACKSPACE || keycode == KEYCODE_ARROW_UP || keycode == KEYCODE_ARROW_DOWN || keycode == KEYCODE_ARROW_LEFT || keycode == KEYCODE_ARROW_RIGHT) {
+    rime_command_queue.push(std::make_shared<RimeCommandProcessKeyEvent>(keyval, keycode, modifiers));
+
+    return TRUE;
   }
 
-  // if (keyval == '\n') {
-  //   return TRUE;
-  // }
-
-  if (keycode != 29 && keycode != 42) {
-    if (keycode == 14) {
-      if (rime_engine->text.length()) {
-        rime_engine->text.erase(rime_engine->text.length() - 1);
-      }
-    } else {
-      rime_engine->text += (char)keyval;
-    }
-
-    log_printf("[debug] text: %s\n", rime_engine->text.data());
-  }
-
-  modifiers &= (IBUS_RELEASE_MASK | IBUS_LOCK_MASK | IBUS_SHIFT_MASK | IBUS_CONTROL_MASK | IBUS_MOD1_MASK);
+  // modifiers &= (IBUS_RELEASE_MASK | IBUS_LOCK_MASK | IBUS_SHIFT_MASK | IBUS_CONTROL_MASK | IBUS_MOD1_MASK);
 
   return FALSE;
 }
@@ -382,58 +367,20 @@ static void ibus_rime_engine_property_activate(IBusEngine* engine, const gchar* 
 
 static void ibus_rime_engine_candidate_clicked(IBusEngine* engine, guint index, guint button, guint state) {
   log_printf("[debug] ibus_rime_engine_candidate_clicked index:%d button:%d state:%d\n", index, button, state);
-
-  // IBusRimeEngine* rime_engine = (IBusRimeEngine*)engine;
-  //
-  // if (RIME_API_AVAILABLE(rime_api, select_candidate)) {
-  //   RIME_STRUCT(RimeContext, context);
-  //   if (!rime_api->get_context(rime_engine->session_id, &context) || context.composition.length == 0) {
-  //     rime_api->free_context(&context);
-  //     return;
-  //   }
-  //   rime_api->select_candidate(rime_engine->session_id, context.menu.page_no * context.menu.page_size + index);
-  //   rime_api->free_context(&context);
-  //   ibus_rime_engine_update(rime_engine);
-  // }
 }
 
 static void ibus_rime_engine_page_up(IBusEngine* engine) {
   log_printf("[debug] ibus_rime_engine_page_up\n");
-
-  // IBusRimeEngine* rime_engine = (IBusRimeEngine*)engine;
-  //
-  // rime_api->process_key(rime_engine->session_id, IBUS_KEY_Page_Up, 0);
-  // ibus_rime_engine_update(rime_engine);
 }
 
 static void ibus_rime_engine_page_down(IBusEngine* engine) {
   log_printf("[debug] ibus_rime_engine_page_down\n");
-
-  // IBusRimeEngine* rime_engine = (IBusRimeEngine*)engine;
-  //
-  // rime_api->process_key(rime_engine->session_id, IBUS_KEY_Page_Down, 0);
-  // ibus_rime_engine_update(rime_engine);
 }
 
 static void ibus_rime_engine_set_cursor_location(IBusEngine* engine, gint x, gint y, gint w, gint h) {
   log_printf("[debug] ibus_rime_engine_set_cursor_location x:%d y:%d w:%d h:%d\n", x, y, w, h);
 
-  IBusRimeEngine* rime_engine = (IBusRimeEngine*)engine;
-
-  runInGUIThread([=]() {
-    log_printf("TEST\n");
-
-    if (!rime_engine->window) {
-      rime_engine->window = new QMainWindow();
-      rime_engine->window->resize(360, 200);
-      rime_engine->window->setWindowOpacity(0.95);
-      rime_engine->window->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-      // rime_engine->window->setWindowIcon(QIcon(":/res/x11-emoji-picker.png"));
-    }
-
-    // rime_engine->window->move(x, y);
-    rime_engine->window->show();
-  });
+  rime_command_queue.push(std::make_shared<RimeCommandSetCursorLocation>(x, y, w, h));
 }
 
 static void ibus_rime_engine_set_capabilities(IBusEngine* engine, guint caps) {
