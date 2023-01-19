@@ -119,6 +119,8 @@ static void ibus_rime_engine_reset(IBusEngine* engine) {
 static void ibus_rime_engine_enable(IBusEngine* engine) {
   log_printf("[debug] ibus_rime_engine_enable\n");
 
+  rime_command_queue.push(std::make_shared<RimeCommandEnable>());
+
   log_printf("[debug] engine.client_capabilities: %d\n", engine->client_capabilities);
   log_printf("[debug] engine.cursor_area: { x: %d, y: %d, w: %d, h: %d }\n", engine->cursor_area.x, engine->cursor_area.y, engine->cursor_area.width, engine->cursor_area.height);
   log_printf("[debug] engine.enabled: %d\n", engine->enabled);
@@ -127,6 +129,8 @@ static void ibus_rime_engine_enable(IBusEngine* engine) {
 
 static void ibus_rime_engine_disable(IBusEngine* engine) {
   log_printf("[debug] ibus_rime_engine_disable\n");
+
+  rime_command_queue.push(std::make_shared<RimeCommandDisable>());
 }
 
 // static void ibus_rime_update_status(IBusRimeEngine* rime_engine, RimeStatus* status) {

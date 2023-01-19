@@ -4,6 +4,9 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QStatusBar>
+#include <QTimer>
+
+std::function<void()> reset_ibus_engine_to_original = []() {};
 
 ThreadsafeQueue<std::shared_ptr<RimeCommand>> rime_command_queue;
 
@@ -42,9 +45,11 @@ typedef enum {
 } IBusModifierType;
 
 RimeWindow::RimeWindow() : QMainWindow() {
-  setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+  setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
   // setWindowIcon(QIcon(":/res/x11-emoji-picker.png"));
   setWindowOpacity(0.95);
+  setFocusPolicy(Qt::NoFocus);
+  setAttribute(Qt::WA_ShowWithoutActivating);
 
   resize(360, 200);
 
@@ -62,10 +67,21 @@ RimeWindow::RimeWindow() : QMainWindow() {
 }
 
 void RimeWindow::reset() {
+  disable();
+
+  reset_ibus_engine_to_original();
+}
+
+void RimeWindow::enable() {
+  show();
+}
+
+void RimeWindow::disable() {
   search_edit->setText("");
   search_edit->repaint();
 
   hide();
+  // move(); TODO: move to center
 }
 
 void RimeWindow::set_cursor_location(int x, int y, int w, int h) {
@@ -81,6 +97,12 @@ void RimeWindow::process_key_event(uint keyval, uint keycode, uint modifiers) {
     return;
   }
 
+  if (modifiers & IBUS_CONTROL_MASK && (char)keyval == 'a') {
+    search_edit->selectAll();
+    search_edit->repaint();
+    return;
+  }
+
   if (keycode == KEYCODE_ESCAPE) {
     reset();
     return;
@@ -91,19 +113,13 @@ void RimeWindow::process_key_event(uint keyval, uint keycode, uint modifiers) {
     return;
   }
 
-  // QKeyEvent::Type event_type = (modifiers & IBUS_RELEASE_MASK) ? QKeyEvent::KeyRelease : QKeyEvent::KeyPress;
-  // int event_key = keyval;
-  // Qt::KeyboardModifiers event_modifiers = Qt::NoModifier;
-  // QString event_text = QString((char)keyval);
-
-  // QKeyEvent* event = new QKeyEvent(event_type, event_key, event_modifiers, event_text);
-  // QCoreApplication::sendEvent(this, event);
+  if (search_edit->hasSelectedText()) {
+    search_edit->setText("");
+  }
 
   if (keycode == KEYCODE_BACKSPACE) {
-    if (!search_edit->text().isEmpty()) {
-      search_edit->setText(search_edit->text().chopped(1));
-      search_edit->repaint();
-    }
+    search_edit->setText(!search_edit->text().isEmpty() ? search_edit->text().chopped(1) : "");
+    search_edit->repaint();
 
     return;
   }
@@ -111,5 +127,11 @@ void RimeWindow::process_key_event(uint keyval, uint keycode, uint modifiers) {
   search_edit->setText(search_edit->text() + (char)keyval);
   search_edit->repaint();
 
-  show();
+  // QKeyEvent::Type event_type = (modifiers & IBUS_RELEASE_MASK) ? QKeyEvent::KeyRelease : QKeyEvent::KeyPress;
+  // int event_key = keyval;
+  // Qt::KeyboardModifiers event_modifiers = Qt::NoModifier;
+  // QString event_text = QString((char)keyval);
+
+  // QKeyEvent* event = new QKeyEvent(event_type, event_key, event_modifiers, event_text);
+  // QCoreApplication::sendEvent(this, event);
 }

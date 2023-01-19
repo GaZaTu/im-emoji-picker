@@ -8,6 +8,8 @@
 #include <QWidget>
 #include <functional>
 
+extern std::function<void()> reset_ibus_engine_to_original;
+
 #define KEYCODE_ESCAPE 1
 #define KEYCODE_RETURN 28
 #define KEYCODE_BACKSPACE 14
@@ -34,6 +36,18 @@ public:
 struct RimeCommandReset : public RimeCommand {
 public:
   RimeCommandReset() : RimeCommand() {
+  }
+};
+
+struct RimeCommandEnable : public RimeCommand {
+public:
+  RimeCommandEnable() : RimeCommand() {
+  }
+};
+
+struct RimeCommandDisable : public RimeCommand {
+public:
+  RimeCommandDisable() : RimeCommand() {
   }
 };
 
@@ -77,6 +91,8 @@ public:
 
 public Q_SLOTS:
   void reset();
+  void enable();
+  void disable();
   void set_cursor_location(int x, int y, int w, int h);
   void process_key_event(uint keyval, uint keycode, uint modifiers);
 

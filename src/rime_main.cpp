@@ -10,6 +10,7 @@
 #include <QMainWindow>
 #include <QThread>
 #include <QTimer>
+#include <QProcess>
 #include <thread>
 
 extern "C" {
@@ -48,6 +49,14 @@ static void rime_with_ibus() {
   IBusFactory* factory = ibus_factory_new(ibus_bus_get_connection(bus));
   g_object_ref_sink(factory);
 
+  IBusEngineDesc* original_engine_info = ibus_bus_get_global_engine(bus);
+  g_object_ref_sink(factory);
+
+  const char* original_engine_name = ibus_engine_desc_get_name(original_engine_info);
+  reset_ibus_engine_to_original = [bus, original_engine_name{std::string{original_engine_name}}]() {
+    ibus_bus_set_global_engine(bus, original_engine_name.data());
+  };
+
   ibus_factory_add_engine(factory, "rime", IBUS_TYPE_RIME_ENGINE);
   if (!ibus_bus_request_name(bus, "im.rime.Rime", 0)) {
     log_printf("[error] could not requst bus name");
@@ -58,6 +67,7 @@ static void rime_with_ibus() {
   ibus_main();
   log_printf("[debug] end ibus_main\n");
 
+  g_object_unref(original_engine_info);
   g_object_unref(factory);
   g_object_unref(bus);
 }
@@ -85,6 +95,12 @@ void gui_main(int argc, char** argv) {
       }
       if (auto command = std::dynamic_pointer_cast<RimeCommandReset>(_command)) {
         rime_window.reset();
+      }
+      if (auto command = std::dynamic_pointer_cast<RimeCommandEnable>(_command)) {
+        rime_window.enable();
+      }
+      if (auto command = std::dynamic_pointer_cast<RimeCommandDisable>(_command)) {
+        rime_window.disable();
       }
       if (auto command = std::dynamic_pointer_cast<RimeCommandSetCursorLocation>(_command)) {
         rime_window.set_cursor_location(command->x, command->y, command->w, command->h);
