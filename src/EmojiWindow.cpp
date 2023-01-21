@@ -20,7 +20,7 @@ ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emoji_command_queue;
 static const int COLS = 10;
 
 EmojiWindow::EmojiWindow() : QMainWindow() {
-  setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+  setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
   // setWindowIcon(QIcon(":/res/x11-emoji-picker.png"));
   setWindowOpacity(0.95);
   setFocusPolicy(Qt::NoFocus);
