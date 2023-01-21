@@ -7,7 +7,9 @@
 #include <QTimer>
 #include <QApplication>
 #include <exception>
+#include <memory>
 #include <qnamespace.h>
+#include <qscrollarea.h>
 #include <vector>
 #include "EmojiLabel.hpp"
 #include "emojis.hpp"
@@ -16,8 +18,6 @@
 std::function<void()> reset_input_method_engine = []() {};
 
 ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emoji_command_queue;
-
-static const int COLS = 10;
 
 EmojiWindow::EmojiWindow() : QMainWindow() {
   setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowDoesNotAcceptFocus);
@@ -28,44 +28,38 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
 
   resize(360, 200);
 
-  emoji_list_widget->setLayout(emoji_list_layout);
-  emoji_list_layout->setContentsMargins(4, 4, 0, 4);
-
-  int row = 0;
-  int col = 0;
   for (const auto& emoji : emojis) {
-    auto emoji_layout_widget = new EmojiLabel(emoji_list_widget, emoji);
+    auto emoji_layout_widget = new EmojiLabel(_emoji_list_widget, emoji);
     auto emoji_layout_item = new QWidgetItemV2(emoji_layout_widget);
-    emoji_list_layout->addItem(emoji_layout_item, row, col);
 
-    col += 1;
-    if (col >= COLS) {
-      col = 0;
-      row += 1;
-    }
+    _allocated_emoji_layout_items.emplace_back(emoji_layout_item);
   }
 
-  selectedEmojiLabel()->setHighlighted(true);
+  _emoji_list_widget->setLayout(_emoji_list_layout);
+  _emoji_list_layout->setContentsMargins(4, 4, 0, 4);
 
-  emoji_list_scroll->setWidgetResizable(true);
-  emoji_list_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  emoji_list_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  emoji_list_scroll->setWidget(emoji_list_widget);
+  updateEmojiList();
 
-  central_widget->setLayout(central_layout);
-  central_layout->setContentsMargins(0, 0, 0, 0);
-  central_layout->setSpacing(0);
-  central_layout->addWidget(search_edit);
-  central_layout->addWidget(emoji_list_scroll);
+  _emoji_list_scroll->setWidgetResizable(true);
+  _emoji_list_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  _emoji_list_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  // _emoji_list_scroll->setSizeAdjustPolicy(QScrollArea::AdjustToContents);
+  _emoji_list_scroll->setWidget(_emoji_list_widget);
 
-  setCentralWidget(central_widget);
+  _central_widget->setLayout(_central_layout);
+  _central_layout->setContentsMargins(0, 0, 0, 0);
+  _central_layout->setSpacing(0);
+  _central_layout->addWidget(_search_edit);
+  _central_layout->addWidget(_emoji_list_scroll);
+
+  setCentralWidget(_central_widget);
 
   // setStatusBar(new QStatusBar(this));
   // statusBar()->showMessage("TEST");
 }
 
 EmojiLabel* EmojiWindow::selectedEmojiLabel() {
-  QLayoutItem* item = emoji_list_layout->itemAtPosition(selectedRow, selectedCol);
+  QLayoutItem* item = _emoji_list_layout->itemAtPosition(_selected_row, _selected_col);
   if (!item) {
     return nullptr;
   }
@@ -75,21 +69,109 @@ EmojiLabel* EmojiWindow::selectedEmojiLabel() {
 }
 
 void EmojiWindow::moveSelectedEmojiLabel(int row, int col) {
-  selectedEmojiLabel()->setHighlighted(false);
-
-  selectedRow += row;
-  if (selectedRow < 0 || selectedRow >= emoji_list_layout->rowCount()) {
-    selectedRow -= row;
+  if (selectedEmojiLabel()) {
+    selectedEmojiLabel()->setHighlighted(false);
   }
 
-  selectedCol += col;
-  if (selectedCol < 0 || selectedCol >= emoji_list_layout->columnCount()) {
-    selectedCol -= col;
+  _selected_row += row;
+  _selected_col += col;
+
+  if (!selectedEmojiLabel()) {
+    _selected_row -= row;
+    _selected_col -= col;
   }
 
-  selectedEmojiLabel()->setHighlighted(true);
+  if (selectedEmojiLabel()) {
+    selectedEmojiLabel()->setHighlighted(true);
 
-  emoji_list_scroll->ensureWidgetVisible(selectedEmojiLabel());
+    if (row != 0) {
+      for (int x = _selected_row; x < std::min(_selected_row + 5, _emoji_list_layout->rowCount()); x++) {
+        for (int y = 0; y < _emoji_list_layout->columnCount(); y++) {
+          QLayoutItem* emoji_layout_item = _emoji_list_layout->itemAtPosition(x, y);
+          if (!emoji_layout_item) {
+            continue;
+          }
+
+          auto label = static_cast<EmojiLabel*>(emoji_layout_item->widget());
+          label->show();
+        }
+      }
+      for (int x = _selected_row; x >= std::max(_selected_row - 5, 0); x--) {
+        for (int y = 0; y < _emoji_list_layout->columnCount(); y++) {
+          QLayoutItem* emoji_layout_item = _emoji_list_layout->itemAtPosition(x, y);
+          if (!emoji_layout_item) {
+            continue;
+          }
+
+          auto label = static_cast<EmojiLabel*>(emoji_layout_item->widget());
+          label->show();
+        }
+      }
+    }
+
+    _emoji_list_scroll->ensureWidgetVisible(selectedEmojiLabel());
+  }
+}
+
+bool stringIncludes(const std::string& text, const std::string& search) {
+  auto found = std::search(text.begin(), text.end(), search.begin(), search.end(), [](char c1, char c2) {
+    return std::tolower(c1) == std::tolower(c2);
+  });
+
+  if (search.length() >= 3) {
+    return found != text.end();
+  } else {
+    return found == text.begin();
+  }
+}
+
+void EmojiWindow::updateEmojiList() {
+  QLayoutItem* item_to_remove;
+  while ((item_to_remove = _emoji_list_layout->itemAt(0))) {
+    auto label = static_cast<EmojiLabel*>(item_to_remove->widget());
+    const auto& emoji = label->emoji();
+
+    _emoji_list_layout->removeItem(item_to_remove);
+
+    label->hide();
+  }
+
+  std::string search = _search_edit->text().toStdString();
+
+  int row = 0;
+  int col = 0;
+  for (auto emoji_layout_item : _allocated_emoji_layout_items) {
+    auto label = static_cast<EmojiLabel*>(emoji_layout_item->widget());
+    const auto& emoji = label->emoji();
+
+    if (search != "" && !stringIncludes(emoji.name, search)) {
+      continue;
+    }
+
+    if (row <= 5) {
+      label->show();
+    }
+
+    _emoji_list_layout->addItem(&*emoji_layout_item, row, col);
+
+    col += 1;
+    if (col >= 10) {
+      col = 0;
+      row += 1;
+    }
+
+    if (search != "" && row >= 5) {
+      break;
+    }
+  }
+
+  _selected_row = 0;
+  _selected_col = 0;
+  if (selectedEmojiLabel()) {
+    selectedEmojiLabel()->setHighlighted(true);
+  }
+
+  _emoji_list_scroll->setWidget(_emoji_list_widget);
 }
 
 void EmojiWindow::reset() {
@@ -105,7 +187,7 @@ void EmojiWindow::disable() {
 
   reset_input_method_engine(); // TODO: configurable
 
-  search_edit->setText("");
+  _search_edit->setText("");
 
   // TODO: move to center
 }
@@ -124,7 +206,7 @@ void EmojiWindow::process_key_event(const QKeyEvent& event) {
   }
 
   if (event.modifiers() & Qt::ControlModifier && event.text() == "a") {
-    search_edit->selectAll();
+    _search_edit->selectAll();
     return;
   }
 
@@ -134,7 +216,7 @@ void EmojiWindow::process_key_event(const QKeyEvent& event) {
   }
 
   if (event.key() == Qt::Key_Return) {
-    commit_text(u8"👌");
+    commit_text(selectedEmojiLabel()->emoji().code);
     return;
   }
 
@@ -158,16 +240,18 @@ void EmojiWindow::process_key_event(const QKeyEvent& event) {
     return;
   }
 
-  if (search_edit->hasSelectedText()) {
-    search_edit->setText("");
+  if (_search_edit->hasSelectedText()) {
+    _search_edit->setText("");
   }
 
   if (event.key() == Qt::Key_Backspace) {
-    search_edit->setText(search_edit->text().left(search_edit->text().length() - 1));
+    _search_edit->setText(_search_edit->text().left(_search_edit->text().length() - 1));
+    updateEmojiList();
     return;
   }
 
-  search_edit->setText(search_edit->text() + event.text());
+  _search_edit->setText(_search_edit->text() + event.text());
+  updateEmojiList();
 }
 
 void gui_main(int argc, char** argv) {

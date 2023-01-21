@@ -11,6 +11,7 @@
 #include <functional>
 #include <memory>
 #include <qevent.h>
+#include <qlayoutitem.h>
 #include <string>
 
 extern std::function<void()> reset_input_method_engine;
@@ -75,21 +76,23 @@ public Q_SLOTS:
   void process_key_event(const QKeyEvent& event);
 
 private:
-  bool standalone = false;
+  std::vector<std::shared_ptr<QWidgetItem>> _allocated_emoji_layout_items;
 
-  int selectedRow = 0;
-  int selectedCol = 0;
+  int _selected_row = 0;
+  int _selected_col = 0;
   EmojiLabel* selectedEmojiLabel();
   void moveSelectedEmojiLabel(int row, int col);
 
-  QWidget* central_widget = new QWidget(this);
-  QVBoxLayout* central_layout = new QVBoxLayout(central_widget);
+  QWidget* _central_widget = new QWidget(this);
+  QVBoxLayout* _central_layout = new QVBoxLayout(_central_widget);
 
-  QLineEdit* search_edit = new QLineEdit(central_widget);
+  QLineEdit* _search_edit = new QLineEdit(_central_widget);
 
-  QScrollArea* emoji_list_scroll = new QScrollArea(central_widget);
-  QWidget* emoji_list_widget = new QWidget(emoji_list_scroll);
-  QGridLayout* emoji_list_layout = new QGridLayout(emoji_list_widget);
+  QScrollArea* _emoji_list_scroll = new QScrollArea(_central_widget);
+  QWidget* _emoji_list_widget = new QWidget(_emoji_list_scroll);
+  QGridLayout* _emoji_list_layout = new QGridLayout(_emoji_list_widget);
+
+  void updateEmojiList();
 };
 
 void gui_main(int argc, char** argv);
