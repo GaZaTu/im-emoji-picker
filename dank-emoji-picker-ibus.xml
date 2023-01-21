@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<component>
+  <name>xyz.gazatu.DankEmojiPicker</name>
+  <description>emoji picker</description>
+  <version>0.1.0</version>
+  <license>MIT</license>
+  <author>GaZaTu &lt;gazatu@protonmail.com&gt;</author>
+  <homepage></homepage>
+  <exec>/usr/lib/ibus/dank-emoji-picker-ibus</exec>
+  <textdomain>dank-emoji-picker</textdomain>
+  <engines>
+    <engine>
+      <name>dank-emoji-picker</name>
+      <longname>dank-emoji-picker</longname>
+      <description>emoji picker</description>
+      <language></language>
+      <license>MIT</license>
+      <author>GaZaTu &lt;gazatu@protonmail.com&gt;</author>
+      <icon></icon>
+      <layout>default</layout>
+      <symbol>🃏</symbol>
+      <rank>0</rank>
+    </engine>
+  </engines>
+</component>

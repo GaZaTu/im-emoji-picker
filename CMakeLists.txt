@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7.2 FATAL_ERROR)
-project(ibus-test VERSION 0.1.0 LANGUAGES CXX)
+project(dank-emoji-picker VERSION 0.1.0 LANGUAGES CXX)
 
 set(PROJECT_NAME_FULL ${PROJECT_NAME})
 set(PROJECT_ORGANIZATION gazatu.xyz)
@@ -18,58 +18,108 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
-
 find_package(ICU REQUIRED COMPONENTS uc)
 
-find_library(IBUS_LIB ibus-1.0 REQUIRED)
-add_library(IBUS STATIC SHARED IMPORTED)
-set_target_properties(IBUS PROPERTIES
-  IMPORTED_LOCATION ${IBUS_LIB}
-)
-
-find_library(GLIB_LIB glib-2.0 REQUIRED)
-add_library(GLIB STATIC SHARED IMPORTED)
-set_target_properties(GLIB PROPERTIES
-  IMPORTED_LOCATION ${GLIB_LIB}
-)
-
-find_library(GOBJECT_LIB gobject-2.0 REQUIRED)
-add_library(GOBJECT STATIC SHARED IMPORTED)
-set_target_properties(GOBJECT PROPERTIES
-  IMPORTED_LOCATION ${GOBJECT_LIB}
-)
-
 include_directories(${PROJECT_SOURCE_DIR}/src)
-include_directories(/usr/include/ibus-1.0)
-include_directories(/usr/include/glib-2.0)
-include_directories(/usr/lib64/glib-2.0/include)
 
-set(COMMON_SRC_FILES
-  src/rime_main.cpp
-  src/rime_engine.cpp
-  src/rime_window.cpp
+set(SRC_FILES_COMMON
+  src/logging.cpp
+  src/emojis.cpp
+  src/emojis.qrc
+  src/EmojiWindow.cpp
+  src/EmojiLabel.cpp
 )
 
-set(SRC_FILES
-  ${COMMON_SRC_FILES}
-)
+if ("${ONLY_IBUS}" STREQUAL "1")
+  set(SKIP_FCITX5 "1")
+endif ()
 
-add_executable(${PROJECT_NAME} ${SRC_FILES})
+if ("${ONLY_FCITX5}" STREQUAL "1")
+  set(SKIP_IBUS "1")
+endif ()
 
-set_target_properties(${PROJECT_NAME} PROPERTIES
-  CXX_STANDARD 14
-  CXX_STANDARD_REQUIRED ON
-  CXX_EXTENSIONS OFF
-)
+if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
+  find_library(IBUS_LIB ibus-1.0)
+  find_library(GLIB_LIB glib-2.0)
+  find_library(GOBJECT_LIB gobject-2.0)
 
-target_link_libraries(${PROJECT_NAME}
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Widgets
-  ICU::uc
-  ${IBUS_LIB}
-  ${GLIB_LIB}
-  ${GOBJECT_LIB}
-)
+  if (NOT ("${IBUS_LIB}" STREQUAL "IBUS_LIB-NOTFOUND"))
+    add_library(IBUS STATIC SHARED IMPORTED)
+    set_target_properties(IBUS PROPERTIES
+      IMPORTED_LOCATION ${IBUS_LIB}
+    )
+
+    add_library(GLIB STATIC SHARED IMPORTED)
+    set_target_properties(GLIB PROPERTIES
+      IMPORTED_LOCATION ${GLIB_LIB}
+    )
+
+    add_library(GOBJECT STATIC SHARED IMPORTED)
+    set_target_properties(GOBJECT PROPERTIES
+      IMPORTED_LOCATION ${GOBJECT_LIB}
+    )
+
+    include_directories(/usr/include/ibus-1.0)
+    include_directories(/usr/include/glib-2.0)
+    include_directories(/usr/lib64/glib-2.0/include)
+
+    set(SRC_FILES_IBUS
+      ${SRC_FILES_COMMON}
+      src/main.cpp
+      src/IBusEmojiEngine.cpp
+    )
+
+    add_executable(${PROJECT_NAME}-ibus ${SRC_FILES_IBUS})
+
+    set_target_properties(${PROJECT_NAME}-ibus PROPERTIES
+      CXX_STANDARD 17
+      CXX_STANDARD_REQUIRED ON
+      CXX_EXTENSIONS OFF
+    )
+
+    target_link_libraries(${PROJECT_NAME}-ibus
+      Qt5::Core
+      Qt5::Gui
+      Qt5::Widgets
+      ICU::uc
+      ${IBUS_LIB}
+      ${GLIB_LIB}
+      ${GOBJECT_LIB}
+    )
+  endif ()
+endif ()
+
+if (NOT ("${SKIP_FCITX5}" STREQUAL "1"))
+  find_package(Fcitx5Core)
+
+  if ("${Fcitx5Core_FOUND}" STREQUAL "1")
+    include_directories(/usr/include/Fcitx5/Core)
+    include_directories(/usr/include/Fcitx5/Config)
+    include_directories(/usr/include/Fcitx5/Utils)
+
+    set(SRC_FILES_FCITX5
+      ${SRC_FILES_COMMON}
+      src/Fcitx5EmojiEngine.cpp
+    )
+
+    add_library(${PROJECT_NAME}-fcitx5 SHARED ${SRC_FILES_FCITX5})
+
+    set_target_properties(${PROJECT_NAME}-fcitx5 PROPERTIES
+      CXX_STANDARD 17
+      CXX_STANDARD_REQUIRED ON
+      CXX_EXTENSIONS OFF
+      PREFIX ""
+    )
+
+    target_link_libraries(${PROJECT_NAME}-fcitx5
+      Qt5::Core
+      Qt5::Gui
+      Qt5::Widgets
+      ICU::uc
+      Fcitx5::Core
+    )
+  endif ()
+endif ()

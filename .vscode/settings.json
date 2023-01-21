@@ -1,7 +1,7 @@
 {
   "files.associations": {
-    "*.qrc": "xml",
     "*.qss": "css",
+    "*.qrc": "xml",
     "string": "cpp",
     "cwchar": "cpp",
     "iostream": "cpp",
@@ -112,7 +112,10 @@
     "span": "cpp",
     "stop_token": "cpp",
     "typeindex": "cpp",
-    "valarray": "cpp"
+    "valarray": "cpp",
+    "qprocess": "cpp",
+    "source_location": "cpp",
+    "filesystem": "cpp"
   },
   "cmake.sourceDirectory": "${workspaceFolder}/.",
   "files.exclude": {
