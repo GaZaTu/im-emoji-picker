@@ -122,6 +122,10 @@ bool stringIncludes(const std::string& text, const std::string& search) {
 }
 
 void EmojiWindow::updateEmojiList() {
+  if (selectedEmojiLabel()) {
+    selectedEmojiLabel()->setHighlighted(false);
+  }
+
   QLayoutItem* item_to_remove;
   while ((item_to_remove = _emoji_list_layout->itemAt(0))) {
     auto label = static_cast<EmojiLabel*>(item_to_remove->widget());
