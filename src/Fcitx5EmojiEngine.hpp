@@ -14,6 +14,9 @@ public:
   void deactivate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) override;
 
   void reset(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) override;
+
+private:
+  void sendCursorLocation(fcitx::InputContext* inputContext);
 };
 
 class Fcitx5EmojiEngineFactory : public fcitx::AddonFactory {

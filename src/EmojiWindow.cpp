@@ -20,8 +20,8 @@ ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emoji_command_queue;
 static const int COLS = 10;
 
 EmojiWindow::EmojiWindow() : QMainWindow() {
-  setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
-  // setWindowIcon(QIcon(":/res/x11-emoji-picker.png"));
+  setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowDoesNotAcceptFocus);
+  setWindowIcon(QIcon(":/res/dank-emoji-picker.png"));
   setWindowOpacity(0.95);
   setFocusPolicy(Qt::NoFocus);
   setAttribute(Qt::WA_ShowWithoutActivating);
@@ -46,7 +46,6 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
   }
 
   selectedEmojiLabel()->setHighlighted(true);
-  // selectedEmojiLabel()->repaint(true);
 
   emoji_list_scroll->setWidgetResizable(true);
   emoji_list_scroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -77,7 +76,6 @@ EmojiLabel* EmojiWindow::selectedEmojiLabel() {
 
 void EmojiWindow::moveSelectedEmojiLabel(int row, int col) {
   selectedEmojiLabel()->setHighlighted(false);
-  // selectedEmojiLabel()->repaint();
 
   selectedRow += row;
   if (selectedRow < 0 || selectedRow >= emoji_list_layout->rowCount()) {
@@ -90,10 +88,8 @@ void EmojiWindow::moveSelectedEmojiLabel(int row, int col) {
   }
 
   selectedEmojiLabel()->setHighlighted(true);
-  // selectedEmojiLabel()->repaint();
 
   emoji_list_scroll->ensureWidgetVisible(selectedEmojiLabel());
-  // emoji_list_scroll->repaint();
 }
 
 void EmojiWindow::reset() {
@@ -110,7 +106,6 @@ void EmojiWindow::disable() {
   reset_input_method_engine(); // TODO: configurable
 
   search_edit->setText("");
-  // search_edit->repaint();
 
   // TODO: move to center
 }
@@ -130,7 +125,6 @@ void EmojiWindow::process_key_event(const QKeyEvent& event) {
 
   if (event.modifiers() & Qt::ControlModifier && event.text() == "a") {
     search_edit->selectAll();
-    // search_edit->repaint();
     return;
   }
 
@@ -170,20 +164,10 @@ void EmojiWindow::process_key_event(const QKeyEvent& event) {
 
   if (event.key() == Qt::Key_Backspace) {
     search_edit->setText(search_edit->text().left(search_edit->text().length() - 1));
-    // search_edit->repaint();
     return;
   }
 
   search_edit->setText(search_edit->text() + event.text());
-  // search_edit->repaint();
-
-  // QKeyEvent::Type event_type = (modifiers & IBUS_RELEASE_MASK) ? QKeyEvent::KeyRelease : QKeyEvent::KeyPress;
-  // int event_key = keyval;
-  // Qt::KeyboardModifiers event_modifiers = Qt::NoModifier;
-  // QString event_text = QString((char)keyval);
-
-  // QKeyEvent* event = new QKeyEvent(event_type, event_key, event_modifiers, event_text);
-  // QCoreApplication::sendEvent(this, event);
 }
 
 void gui_main(int argc, char** argv) {

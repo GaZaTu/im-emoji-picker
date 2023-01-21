@@ -10,6 +10,7 @@
 #include <fcitx/event.h>
 #include <fcitx/inputcontext.h>
 #include <thread>
+#include <unistd.h>
 
 #define KEYCODE_ESCAPE 9
 #define KEYCODE_RETURN 36
@@ -20,7 +21,7 @@
 #define KEYCODE_ARROW_RIGHT 114
 
 void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::KeyEvent& keyEvent) {
-  log_printf("[debug] Fcitx5EmojiEngine::keyEvent code: %d key:%s isRelease:%d\n", keyEvent.key().code(), keyEvent.key().toString().data(), keyEvent.isRelease());
+  log_printf("[debug] Fcitx5EmojiEngine::keyEvent code:%d key:%s isRelease:%d\n", keyEvent.key().code(), keyEvent.key().toString().data(), keyEvent.isRelease());
 
   QKeyEvent::Type _type = keyEvent.isRelease() ? QKeyEvent::KeyRelease : QKeyEvent::KeyPress;
   int _key = 0;
@@ -69,9 +70,14 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
 void Fcitx5EmojiEngine::activate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
   log_printf("[debug] Fcitx5EmojiEngine::activate\n");
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandEnable>([inputContext{event.inputContext()}](const std::string& text) {
+  emoji_command_queue.push(std::make_shared<EmojiCommandEnable>([this, inputContext{event.inputContext()}](const std::string& text) {
     inputContext->commitString(text);
+
+    usleep(10000);
+    sendCursorLocation(inputContext);
   }));
+
+  sendCursorLocation(event.inputContext());
 }
 
 void Fcitx5EmojiEngine::deactivate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
@@ -84,6 +90,14 @@ void Fcitx5EmojiEngine::reset(const fcitx::InputMethodEntry& entry, fcitx::Input
   log_printf("[debug] Fcitx5EmojiEngine::reset\n");
 
   emoji_command_queue.push(std::make_shared<EmojiCommandReset>());
+}
+
+void Fcitx5EmojiEngine::sendCursorLocation(fcitx::InputContext* inputContext) {
+  const fcitx::Rect& r = inputContext->cursorRect();
+
+  log_printf("[debug] Fcitx5EmojiEngine::sendCursorLocation x:%d y:%d w:%d h:%d\n", r.left(), r.top(), r.width(), r.height());
+
+  emoji_command_queue.push(std::make_shared<EmojiCommandSetCursorLocation>(new QRect(r.left(), r.top(), r.width(), r.height())));
 }
 
 fcitx::AddonInstance* Fcitx5EmojiEngineFactory::create(fcitx::AddonManager* manager) {

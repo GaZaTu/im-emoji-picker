@@ -1,0 +1,4 @@
+for_window {
+        [title="dank-emoji-picker"] floating enable
+}
+no_focus [title="dank-emoji-picker"]
