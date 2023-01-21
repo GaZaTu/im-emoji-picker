@@ -61,7 +61,7 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
   QString _text = QString::fromStdString(keyEvent.key().toString());
 
   if (_key != 0 || (_text.length() == 1 && isascii(_text.at(0).toLatin1()))) {
-    emoji_command_queue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
+    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
 
     keyEvent.filterAndAccept();
   }
@@ -70,7 +70,7 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
 void Fcitx5EmojiEngine::activate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
   log_printf("[debug] Fcitx5EmojiEngine::activate\n");
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandEnable>([this, inputContext{event.inputContext()}](const std::string& text) {
+  emojiCommandQueue.push(std::make_shared<EmojiCommandEnable>([this, inputContext{event.inputContext()}](const std::string& text) {
     inputContext->commitString(text);
 
     usleep(10000);
@@ -83,13 +83,13 @@ void Fcitx5EmojiEngine::activate(const fcitx::InputMethodEntry& entry, fcitx::In
 void Fcitx5EmojiEngine::deactivate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
   log_printf("[debug] Fcitx5EmojiEngine::deactivate\n");
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandDisable>());
+  emojiCommandQueue.push(std::make_shared<EmojiCommandDisable>());
 }
 
 void Fcitx5EmojiEngine::reset(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
   log_printf("[debug] Fcitx5EmojiEngine::reset\n");
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandReset>());
+  emojiCommandQueue.push(std::make_shared<EmojiCommandReset>());
 }
 
 void Fcitx5EmojiEngine::sendCursorLocation(fcitx::InputContext* inputContext) {
@@ -97,7 +97,7 @@ void Fcitx5EmojiEngine::sendCursorLocation(fcitx::InputContext* inputContext) {
 
   log_printf("[debug] Fcitx5EmojiEngine::sendCursorLocation x:%d y:%d w:%d h:%d\n", r.left(), r.top(), r.width(), r.height());
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandSetCursorLocation>(new QRect(r.left(), r.top(), r.width(), r.height())));
+  emojiCommandQueue.push(std::make_shared<EmojiCommandSetCursorLocation>(new QRect(r.left(), r.top(), r.width(), r.height())));
 }
 
 fcitx::AddonInstance* Fcitx5EmojiEngineFactory::create(fcitx::AddonManager* manager) {

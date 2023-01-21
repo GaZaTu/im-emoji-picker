@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
   g_object_ref_sink(factory);
 
   const char* original_engine_name = ibus_engine_desc_get_name(original_engine_info);
-  reset_input_method_engine = [bus, original_engine_name{std::string{original_engine_name}}]() {
+  resetInputMethodEngine = [bus, original_engine_name{std::string{original_engine_name}}]() {
     ibus_bus_set_global_engine(bus, original_engine_name.data());
   };
 

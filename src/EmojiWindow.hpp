@@ -12,9 +12,11 @@
 #include <memory>
 #include <qevent.h>
 #include <qlayoutitem.h>
+#include <qwidget.h>
 #include <string>
+#include <QStackedLayout>
 
-extern std::function<void()> reset_input_method_engine;
+extern std::function<void()> resetInputMethodEngine;
 
 struct EmojiCommand {
 public:
@@ -24,9 +26,9 @@ public:
 
 struct EmojiCommandEnable : public EmojiCommand {
 public:
-  std::function<void(const std::string&)> commit_text;
+  std::function<void(const std::string&)> commitText;
 
-  EmojiCommandEnable(std::function<void(const std::string&)> commit_text) : EmojiCommand(), commit_text{std::move(commit_text)} {
+  EmojiCommandEnable(std::function<void(const std::string&)> commitText) : EmojiCommand(), commitText{std::move(commitText)} {
   }
 };
 
@@ -52,19 +54,19 @@ public:
 
 struct EmojiCommandProcessKeyEvent : public EmojiCommand {
 public:
-  std::shared_ptr<QKeyEvent> key_event;
+  std::shared_ptr<QKeyEvent> keyEvent;
 
-  EmojiCommandProcessKeyEvent(QKeyEvent* key_event) : EmojiCommand(), key_event{key_event} {
+  EmojiCommandProcessKeyEvent(QKeyEvent* keyEvent) : EmojiCommand(), keyEvent{keyEvent} {
   }
 };
 
-extern ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emoji_command_queue;
+extern ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emojiCommandQueue;
 
 struct EmojiWindow : public QMainWindow {
   Q_OBJECT
 
 public:
-  std::function<void(const std::string&)> commit_text;
+  std::function<void(const std::string&)> commitText;
 
   explicit EmojiWindow();
 
@@ -72,26 +74,30 @@ public Q_SLOTS:
   void reset();
   void enable();
   void disable();
-  void set_cursor_location(const QRect& rect);
-  void process_key_event(const QKeyEvent& event);
+  void setCursorLocation(const QRect& rect);
+  void processKeyEvent(const QKeyEvent& event);
 
 private:
-  std::vector<std::shared_ptr<QWidgetItem>> _allocated_emoji_layout_items;
+  std::vector<std::shared_ptr<QWidgetItem>> _emojiLayoutItems;
 
-  int _selected_row = 0;
-  int _selected_col = 0;
+  int _selectedRow = 0;
+  int _selectedColumn = 0;
   EmojiLabel* selectedEmojiLabel();
   void moveSelectedEmojiLabel(int row, int col);
 
-  QWidget* _central_widget = new QWidget(this);
-  QVBoxLayout* _central_layout = new QVBoxLayout(_central_widget);
+  QWidget* _centralWidget = new QWidget(this);
+  QVBoxLayout* _centralLayout = new QVBoxLayout(_centralWidget);
 
-  QLineEdit* _search_edit = new QLineEdit(_central_widget);
+  QWidget* _searchContainerWidget = new QWidget(_centralWidget);
+  QStackedLayout* _searchContainerLayout = new QStackedLayout(_searchContainerWidget);
+  QLineEdit* _searchEdit = new QLineEdit(_searchContainerWidget);
+  QLabel* _searchCompletion = new QLabel(_searchEdit);
 
-  QScrollArea* _emoji_list_scroll = new QScrollArea(_central_widget);
-  QWidget* _emoji_list_widget = new QWidget(_emoji_list_scroll);
-  QGridLayout* _emoji_list_layout = new QGridLayout(_emoji_list_widget);
+  QScrollArea* _emojiListScroll = new QScrollArea(_centralWidget);
+  QWidget* _emojiListWidget = new QWidget(_emojiListScroll);
+  QGridLayout* _emojiListLayout = new QGridLayout(_emojiListWidget);
 
+  void updateSearchCompletion();
   void updateEmojiList();
 };
 

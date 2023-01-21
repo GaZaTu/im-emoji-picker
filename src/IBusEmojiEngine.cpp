@@ -85,7 +85,7 @@ static void ibus_emoji_engine_destroy(IBusEmojiEngine* emoji_engine) {
 static void ibus_emoji_engine_enable(IBusEngine* engine) {
   log_printf("[debug] ibus_emoji_engine_enable\n");
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandEnable>([engine](const std::string& text) {
+  emojiCommandQueue.push(std::make_shared<EmojiCommandEnable>([engine](const std::string& text) {
     ibus_engine_commit_text(engine, ibus_text_new_from_string(text.data()));
   }));
 }
@@ -93,13 +93,13 @@ static void ibus_emoji_engine_enable(IBusEngine* engine) {
 static void ibus_emoji_engine_disable(IBusEngine* engine) {
   log_printf("[debug] ibus_emoji_engine_disable\n");
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandDisable>());
+  emojiCommandQueue.push(std::make_shared<EmojiCommandDisable>());
 }
 
 static void ibus_emoji_engine_reset(IBusEngine* engine) {
   log_printf("[debug] ibus_emoji_engine_reset\n");
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandReset>());
+  emojiCommandQueue.push(std::make_shared<EmojiCommandReset>());
 }
 
 #define KEYCODE_ESCAPE 1
@@ -151,7 +151,7 @@ static gboolean ibus_emoji_engine_process_key_event(IBusEngine* engine, guint ke
   QString _text = QString::fromStdString(std::string{(char)keyval});
 
   if (_key != 0 || (_text.length() == 1 && isascii(_text.at(0).toLatin1()))) {
-    emoji_command_queue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
+    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
 
     return TRUE;
   }
@@ -162,7 +162,7 @@ static gboolean ibus_emoji_engine_process_key_event(IBusEngine* engine, guint ke
 static void ibus_emoji_engine_set_cursor_location(IBusEngine* engine, gint x, gint y, gint w, gint h) {
   log_printf("[debug] ibus_emoji_engine_set_cursor_location x:%d y:%d w:%d h:%d\n", x, y, w, h);
 
-  emoji_command_queue.push(std::make_shared<EmojiCommandSetCursorLocation>(new QRect(x, y, w, h)));
+  emojiCommandQueue.push(std::make_shared<EmojiCommandSetCursorLocation>(new QRect(x, y, w, h)));
 }
 }
 
