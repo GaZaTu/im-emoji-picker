@@ -60,7 +60,7 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
   }
   QString _text = QString::fromStdString(keyEvent.key().toString());
 
-  if (_key != 0 || isascii(_text.at(0).toLatin1())) {
+  if (_key != 0 || (_text.length() == 1 && isascii(_text.at(0).toLatin1()))) {
     emoji_command_queue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
 
     keyEvent.filterAndAccept();

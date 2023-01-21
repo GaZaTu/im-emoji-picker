@@ -68,6 +68,18 @@ EmojiLabel* EmojiWindow::selectedEmojiLabel() {
   return widget;
 }
 
+void showEmojiRow(QGridLayout* _emoji_list_layout, int row) {
+  for (int col = 0; col < _emoji_list_layout->columnCount(); col++) {
+    QLayoutItem* emoji_layout_item = _emoji_list_layout->itemAtPosition(row, col);
+    if (!emoji_layout_item) {
+      continue;
+    }
+
+    auto label = static_cast<EmojiLabel*>(emoji_layout_item->widget());
+    label->show();
+  }
+}
+
 void EmojiWindow::moveSelectedEmojiLabel(int row, int col) {
   if (selectedEmojiLabel()) {
     selectedEmojiLabel()->setHighlighted(false);
@@ -86,26 +98,10 @@ void EmojiWindow::moveSelectedEmojiLabel(int row, int col) {
 
     if (row != 0) {
       for (int x = _selected_row; x < std::min(_selected_row + 5, _emoji_list_layout->rowCount()); x++) {
-        for (int y = 0; y < _emoji_list_layout->columnCount(); y++) {
-          QLayoutItem* emoji_layout_item = _emoji_list_layout->itemAtPosition(x, y);
-          if (!emoji_layout_item) {
-            continue;
-          }
-
-          auto label = static_cast<EmojiLabel*>(emoji_layout_item->widget());
-          label->show();
-        }
+        showEmojiRow(_emoji_list_layout, x);
       }
       for (int x = _selected_row; x >= std::max(_selected_row - 5, 0); x--) {
-        for (int y = 0; y < _emoji_list_layout->columnCount(); y++) {
-          QLayoutItem* emoji_layout_item = _emoji_list_layout->itemAtPosition(x, y);
-          if (!emoji_layout_item) {
-            continue;
-          }
-
-          auto label = static_cast<EmojiLabel*>(emoji_layout_item->widget());
-          label->show();
-        }
+        showEmojiRow(_emoji_list_layout, x);
       }
     }
 

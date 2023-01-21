@@ -150,7 +150,7 @@ static gboolean ibus_emoji_engine_process_key_event(IBusEngine* engine, guint ke
   }
   QString _text = QString::fromStdString(std::string{(char)keyval});
 
-  if (_key != 0 || isascii(_text.at(0).toLatin1())) {
+  if (_key != 0 || (_text.length() == 1 && isascii(_text.at(0).toLatin1()))) {
     emoji_command_queue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
 
     return TRUE;
