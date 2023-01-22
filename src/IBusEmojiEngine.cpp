@@ -1,3 +1,4 @@
+#include <qnamespace.h>
 #if __has_include("ibus.h")
 
 #include "IBusEmojiEngine.hpp"
@@ -105,6 +106,7 @@ static void ibus_emoji_engine_reset(IBusEngine* engine) {
 #define KEYCODE_ESCAPE 1
 #define KEYCODE_RETURN 28
 #define KEYCODE_BACKSPACE 14
+#define KEYCODE_TAB 0
 #define KEYCODE_ARROW_UP 103
 #define KEYCODE_ARROW_DOWN 108
 #define KEYCODE_ARROW_LEFT 105
@@ -125,6 +127,9 @@ static gboolean ibus_emoji_engine_process_key_event(IBusEngine* engine, guint ke
   case KEYCODE_BACKSPACE: // IBUS_KEY_BackSpace:
     _key = Qt::Key_Backspace;
     break;
+  case KEYCODE_TAB: // IBUS_KEY_Tab:
+    _key = Qt::Key_Tab;
+    break;
   case KEYCODE_ARROW_UP: // IBUS_KEY_uparrow:
     _key = Qt::Key_Up;
     break;
@@ -140,23 +145,28 @@ static gboolean ibus_emoji_engine_process_key_event(IBusEngine* engine, guint ke
   }
   Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
   if (modifiers & IBUS_SUPER_MASK) {
-    return FALSE;
+    _modifiers |= Qt::MetaModifier;
   }
   if (modifiers & IBUS_CONTROL_MASK) {
-    _modifiers = _modifiers | Qt::ControlModifier;
+    _modifiers |= Qt::ControlModifier;
   }
   if (modifiers & IBUS_SHIFT_MASK) {
-    _modifiers = _modifiers | Qt::ShiftModifier;
+    _modifiers |= Qt::ShiftModifier;
   }
   QString _text = QString::fromStdString(std::string{(char)keyval});
 
-  if (_key != 0 || (_text.length() == 1 && isascii(_text.at(0).toLatin1()))) {
+  QKeyEvent* qevent = new QKeyEvent(_type, _key, _modifiers, _text);
+  EmojiAction action = getEmojiActionForQKeyEvent(qevent);
+
+  if (action != EmojiAction::INVALID) {
     emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
 
     return TRUE;
-  }
+  } else {
+    delete qevent;
 
-  return FALSE;
+    return FALSE;
+  }
 }
 
 static void ibus_emoji_engine_set_cursor_location(IBusEngine* engine, gint x, gint y, gint w, gint h) {

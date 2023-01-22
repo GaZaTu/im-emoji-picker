@@ -31,6 +31,7 @@ set(SRC_FILES_COMMON
   src/emojis.qrc
   src/EmojiWindow.cpp
   src/EmojiLabel.cpp
+  src/EmojiCache.cpp
 )
 
 if ("${ONLY_IBUS}" STREQUAL "1")

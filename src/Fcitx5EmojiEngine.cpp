@@ -13,10 +13,12 @@
 #include <qnamespace.h>
 #include <thread>
 #include <unistd.h>
+#include <QProcess>
 
 #define KEYCODE_ESCAPE 9
 #define KEYCODE_RETURN 36
 #define KEYCODE_BACKSPACE 22
+#define KEYCODE_TAB 23
 #define KEYCODE_ARROW_UP 111
 #define KEYCODE_ARROW_DOWN 116
 #define KEYCODE_ARROW_LEFT 113
@@ -44,6 +46,9 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
   case KEYCODE_BACKSPACE: // FcitxKey_BackSpace:
     _key = Qt::Key_Backspace;
     break;
+  case KEYCODE_TAB: // FcitxKey_Tab:
+    _key = Qt::Key_Tab;
+    break;
   case KEYCODE_ARROW_UP: // FcitxKey_uparrow:
     _key = Qt::Key_Up;
     break;
@@ -59,30 +64,35 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
   }
   Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
   if (keyEvent.key().states() & fcitx::KeyState::Super) {
-    return;
+    _modifiers |= Qt::MetaModifier;
   }
   if (keyEvent.key().states() & fcitx::KeyState::Ctrl) {
-    _modifiers = _modifiers | Qt::ControlModifier;
+    _modifiers |= Qt::ControlModifier;
   }
   if (keyEvent.key().states() & fcitx::KeyState::Shift) {
-    _modifiers = _modifiers | Qt::ShiftModifier;
+    _modifiers |= Qt::ShiftModifier;
   }
   QString _text = QString::fromStdString(keyEvent.key().toString());
   _text = _text.right(1);
 
   switch (keyEvent.key().code()) {
   case KEYCODE_SPACE: // FcitxKey_Space:
-    _key = Qt::Key_Space;
+    _text = " ";
     break;
   case KEYCODE_UNDERSCORE: // FcitxKey_Underscore:
-    _key = Qt::Key_Underscore;
+    _text = "_";
     break;
   }
 
-  if (_key != 0 || (_text.length() == 1 && isascii(_text.at(0).toLatin1()))) {
-    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
+  QKeyEvent* qevent = new QKeyEvent(_type, _key, _modifiers, _text);
+  EmojiAction action = getEmojiActionForQKeyEvent(qevent);
+
+  if (action != EmojiAction::INVALID) {
+    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(qevent));
 
     keyEvent.filterAndAccept();
+  } else {
+    delete qevent;
   }
 
   if (_key == Qt::Key_Return && _type == QKeyEvent::KeyRelease) {
@@ -126,8 +136,21 @@ void Fcitx5EmojiEngine::sendCursorLocation(fcitx::InputContext* inputContext) {
 fcitx::AddonInstance* Fcitx5EmojiEngineFactory::create(fcitx::AddonManager* manager) {
   log_printf("[debug] Fcitx5EmojiEngineFactory::create\n");
 
-  static bool started_gui_thread = false;
-  if (!started_gui_thread) {
+  std::thread{[]() {
+    QProcess fcitx5remote;
+    fcitx5remote.start("fcitx5-remote", {"-n"});
+    fcitx5remote.waitForFinished();
+
+    QString defaultInputMethod{fcitx5remote.readAllStandardOutput()};
+    resetInputMethodEngine = [defaultInputMethod{defaultInputMethod.trimmed()}]() {
+      QProcess fcitx5remote;
+      fcitx5remote.start("fcitx5-remote", {"-s", defaultInputMethod});
+      fcitx5remote.waitForFinished();
+    };
+  }}.detach();
+
+  static bool startedGUIThread = false;
+  if (!startedGUIThread) {
     std::thread{gui_main, 0, nullptr}.detach();
   }
 

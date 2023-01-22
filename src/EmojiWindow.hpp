@@ -15,6 +15,7 @@
 #include <qwidget.h>
 #include <string>
 #include <QStackedLayout>
+#include <vector>
 
 extern std::function<void()> resetInputMethodEngine;
 
@@ -62,6 +63,21 @@ public:
 
 extern ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emojiCommandQueue;
 
+enum class EmojiAction {
+  INVALID,
+  SELECT_ALL_IN_SEARCH,
+  COPY_SELECTED_EMOJI,
+  DISABLE,
+  COMMIT_EMOJI,
+  SWITCH_VIEW_MODE,
+  CHANGE_SELECTED_EMOJI,
+  CUT_SELECTION_IN_SEARCH,
+  REMOVE_CHAR_IN_SEARCH,
+  INSERT_CHAR_IN_SEARCH,
+};
+
+EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event);
+
 struct EmojiWindow : public QMainWindow {
   Q_OBJECT
 
@@ -74,8 +90,8 @@ public Q_SLOTS:
   void reset();
   void enable();
   void disable();
-  void setCursorLocation(const QRect& rect);
-  void processKeyEvent(const QKeyEvent& event);
+  void setCursorLocation(const QRect* rect);
+  void processKeyEvent(const QKeyEvent* event);
 
 private:
   std::vector<std::shared_ptr<QWidgetItem>> _emojiLayoutItems;
@@ -107,6 +123,15 @@ private:
   bool _useSystemEmojiFontWidthHeuristics = true;
 
   bool isDisabledEmoji(const Emoji& emoji);
+
+  std::vector<Emoji> _emojiMRU;
+
+  enum class ViewMode {
+    MRU,
+    LIST,
+  };
+
+  ViewMode _mode = ViewMode::MRU;
 };
 
 void gui_main(int argc, char** argv);
