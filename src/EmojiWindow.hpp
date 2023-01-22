@@ -99,6 +99,14 @@ private:
 
   void updateSearchCompletion();
   void updateEmojiList();
+
+  short _maxEmojiVersion = -1;
+  bool _skinTonesDisabled = true;
+  bool _gendersDisabled = true;
+  bool _useSystemEmojiFont = false;
+  bool _useSystemEmojiFontWidthHeuristics = true;
+
+  bool isDisabledEmoji(const Emoji& emoji);
 };
 
 void gui_main(int argc, char** argv);

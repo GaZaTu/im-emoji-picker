@@ -60,7 +60,7 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
   _emojiListScroll->setWidgetResizable(true);
   _emojiListScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   _emojiListScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  // _emoji_list_scroll->setSizeAdjustPolicy(QScrollArea::AdjustToContents);
+  // _emojiListScroll->setSizeAdjustPolicy(QScrollArea::AdjustToContents);
   _emojiListScroll->setWidget(_emojiListWidget);
 
   _centralWidget->setLayout(_centralLayout);
@@ -160,6 +160,28 @@ void EmojiWindow::updateSearchCompletion() {
   _searchCompletion->setText(completion);
 }
 
+bool EmojiWindow::isDisabledEmoji(const Emoji& emoji) {
+  if (_maxEmojiVersion != -1 && (emoji.version > _maxEmojiVersion)) {
+    return true;
+  }
+
+  if (_skinTonesDisabled && emoji.isSkinToneVariation()) {
+    return true;
+  }
+
+  if (_gendersDisabled && emoji.isGenderVariation()) {
+    return true;
+  }
+
+  if (_useSystemEmojiFont && _useSystemEmojiFontWidthHeuristics) {
+    if (!fontSupportsEmoji(fontMetrics(), QString::fromStdString(emoji.code))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void EmojiWindow::updateEmojiList() {
   if (selectedEmojiLabel()) {
     selectedEmojiLabel()->setHighlighted(false);
@@ -182,6 +204,10 @@ void EmojiWindow::updateEmojiList() {
   for (auto emojiLayoutItem : _emojiLayoutItems) {
     auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
     const auto& emoji = label->emoji();
+
+    if (isDisabledEmoji(emoji)) {
+      continue;
+    }
 
     if (search != "" && !stringIncludes(emoji.name, search)) {
       continue;

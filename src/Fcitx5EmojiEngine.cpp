@@ -22,6 +22,9 @@
 #define KEYCODE_ARROW_LEFT 113
 #define KEYCODE_ARROW_RIGHT 114
 
+#define KEYCODE_SPACE 65
+#define KEYCODE_UNDERSCORE 61
+
 void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::KeyEvent& keyEvent) {
   log_printf("[debug] Fcitx5EmojiEngine::keyEvent key:%s code:%d isRelease:%d\n", keyEvent.key().toString().data(), keyEvent.key().code(), keyEvent.isRelease());
 
@@ -66,6 +69,15 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
   }
   QString _text = QString::fromStdString(keyEvent.key().toString());
   _text = _text.right(1);
+
+  switch (keyEvent.key().code()) {
+  case KEYCODE_SPACE: // FcitxKey_Space:
+    _key = Qt::Key_Space;
+    break;
+  case KEYCODE_UNDERSCORE: // FcitxKey_Underscore:
+    _key = Qt::Key_Underscore;
+    break;
+  }
 
   if (_key != 0 || (_text.length() == 1 && isascii(_text.at(0).toLatin1()))) {
     emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
