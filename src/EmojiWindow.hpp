@@ -12,6 +12,7 @@
 #include <memory>
 #include <qevent.h>
 #include <qlayoutitem.h>
+#include <qstatusbar.h>
 #include <qwidget.h>
 #include <string>
 #include <QStackedLayout>
@@ -132,6 +133,10 @@ private:
   };
 
   ViewMode _mode = ViewMode::MRU;
+
+  QStatusBar* _statusBar = new QStatusBar(this);
+  EmojiLabel* _mruModeLabel = new EmojiLabel(_statusBar);
+  EmojiLabel* _listModeLabel = new EmojiLabel(_statusBar);
 };
 
 void gui_main(int argc, char** argv);

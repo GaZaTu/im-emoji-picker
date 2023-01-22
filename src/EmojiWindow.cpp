@@ -6,6 +6,7 @@
 #include <QStatusBar>
 #include <QTimer>
 #include <QApplication>
+#include <algorithm>
 #include <exception>
 #include <memory>
 #include <qlineedit.h>
@@ -69,9 +70,16 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
 
   setCentralWidget(_centralWidget);
 
-  // setStatusBar(new QStatusBar(this));
-  // statusBar()->addPermanentWidget(new EmojiLabel(this, {"", u8"⭐"}));
-  // statusBar()->addPermanentWidget(new EmojiLabel(this, {"", u8"🗃"}));
+  _statusBar->setFixedHeight(20);
+
+  _mruModeLabel->setEmoji({"", u8"⭐"}, 14, 14);
+  _mruModeLabel->setHighlighted(_mode == ViewMode::MRU);
+  _listModeLabel->setEmoji({"", u8"🗃"}, 14, 14);
+  _listModeLabel->setHighlighted(_mode == ViewMode::LIST);
+
+  setStatusBar(_statusBar);
+  statusBar()->addPermanentWidget(_mruModeLabel);
+  statusBar()->addPermanentWidget(_listModeLabel);
 }
 
 EmojiLabel* EmojiWindow::selectedEmojiLabel() {
@@ -197,41 +205,70 @@ void EmojiWindow::updateEmojiList() {
 
   std::string search = _searchEdit->text().toStdString();
 
-  int row = 0;
-  int column = 0;
-  for (auto emojiLayoutItem : _emojiLayoutItems) {
-    auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
-    const auto& emoji = label->emoji();
+  switch (_mode) {
+  case ViewMode::MRU: {
+    int row = 0;
+    int column = 0;
+    for (const auto& emoji : _emojiMRU) {
+      auto emojiLayoutItemIterator = std::find_if(_emojiLayoutItems.begin(), _emojiLayoutItems.end(), [&emoji](std::shared_ptr<QWidgetItem> emojiLayoutItem) {
+        auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
+        auto matches = (label->emoji() == emoji);
 
-    if (_mode == ViewMode::MRU && search == "") {
-      if (std::find(_emojiMRU.begin(), _emojiMRU.end(), emoji) == _emojiMRU.end()) {
+        return matches;
+      });
+      if (emojiLayoutItemIterator == _emojiLayoutItems.end()) {
         continue;
       }
-    }
 
-    if (isDisabledEmoji(emoji)) {
-      continue;
-    }
+      auto emojiLayoutItem = *emojiLayoutItemIterator;
 
-    if (search != "" && !stringIncludes(emoji.name, search)) {
-      continue;
-    }
-
-    if (row <= 5) {
+      auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
       label->show();
-    }
 
-    _emojiListLayout->addItem(&*emojiLayoutItem, row, column);
+      _emojiListLayout->addItem(&*emojiLayoutItem, row, column);
 
-    column += 1;
-    if (column >= 10) {
-      column = 0;
-      row += 1;
+      column += 1;
+      if (column >= 10) {
+        column = 0;
+        row += 1;
+      }
     }
+    break;
+  }
 
-    if (search != "" && row >= 5) {
-      break;
+  case ViewMode::LIST: {
+    int row = 0;
+    int column = 0;
+    for (auto emojiLayoutItem : _emojiLayoutItems) {
+      auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
+      const auto& emoji = label->emoji();
+
+      if (isDisabledEmoji(emoji)) {
+        continue;
+      }
+
+      if (search != "" && !stringIncludes(emoji.name, search)) {
+        continue;
+      }
+
+      if (row <= 5) {
+        label->show();
+      }
+
+      _emojiListLayout->addItem(&*emojiLayoutItem, row, column);
+
+      column += 1;
+      if (column >= 10) {
+        column = 0;
+        row += 1;
+      }
+
+      if (search != "" && row >= 5) {
+        break;
+      }
     }
+    break;
+  }
   }
 
   _selectedRow = 0;
@@ -378,6 +415,9 @@ void EmojiWindow::processKeyEvent(const QKeyEvent* event) {
 
       std::erase(_emojiMRU, emoji);
       _emojiMRU.insert(_emojiMRU.begin(), emoji);
+      while (_emojiMRU.size() > 40) {
+        _emojiMRU.pop_back();
+      }
     }
     if (event->modifiers() & Qt::ShiftModifier) {
       disable();
@@ -393,6 +433,8 @@ void EmojiWindow::processKeyEvent(const QKeyEvent* event) {
       _mode = ViewMode::MRU;
       break;
     }
+    _mruModeLabel->setHighlighted(_mode == ViewMode::MRU);
+    _listModeLabel->setHighlighted(_mode == ViewMode::LIST);
     _searchEdit->setText("");
     _searchCompletion->setText("");
     updateEmojiList();

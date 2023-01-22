@@ -1,11 +1,11 @@
-#include <qnamespace.h>
 #if __has_include("ibus.h")
 
 #include "IBusEmojiEngine.hpp"
-#include "logging.hpp"
 #include "EmojiWindow.hpp"
+#include "logging.hpp"
 #include <cctype>
 #include <memory>
+#include <qnamespace.h>
 #include <string>
 
 extern "C" {
@@ -106,7 +106,7 @@ static void ibus_emoji_engine_reset(IBusEngine* engine) {
 #define KEYCODE_ESCAPE 1
 #define KEYCODE_RETURN 28
 #define KEYCODE_BACKSPACE 14
-#define KEYCODE_TAB 0
+#define KEYCODE_TAB 15
 #define KEYCODE_ARROW_UP 103
 #define KEYCODE_ARROW_DOWN 108
 #define KEYCODE_ARROW_LEFT 105
