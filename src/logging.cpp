@@ -5,6 +5,7 @@
 
 extern "C" {
 void log_printf(const char* format, ...) {
+#ifndef NDEBUG
   static FILE* log_file = nullptr;
   if (!log_file) {
     log_file = fopen("/tmp/dank-emoji-picker.log", "a");
@@ -18,5 +19,6 @@ void log_printf(const char* format, ...) {
   va_end(args);
 
   fflush(log_file);
+#endif
 }
 }

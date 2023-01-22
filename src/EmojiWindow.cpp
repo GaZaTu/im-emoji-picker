@@ -72,7 +72,8 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
   setCentralWidget(_centralWidget);
 
   // setStatusBar(new QStatusBar(this));
-  // statusBar()->showMessage("TEST");
+  // statusBar()->addPermanentWidget(new EmojiLabel(this, {"", u8"⭐"}));
+  // statusBar()->addPermanentWidget(new EmojiLabel(this, {"", u8"🗃"}));
 }
 
 EmojiLabel* EmojiWindow::selectedEmojiLabel() {
@@ -85,14 +86,14 @@ EmojiLabel* EmojiWindow::selectedEmojiLabel() {
   return widget;
 }
 
-void showEmojiRow(QGridLayout* _emoji_list_layout, int row) {
-  for (int column = 0; column < _emoji_list_layout->columnCount(); column++) {
-    QLayoutItem* emoji_layout_item = _emoji_list_layout->itemAtPosition(row, column);
-    if (!emoji_layout_item) {
+void showEmojiRow(QGridLayout* _emojiListLayout, int row) {
+  for (int column = 0; column < _emojiListLayout->columnCount(); column++) {
+    QLayoutItem* emojiLayoutItem = _emojiListLayout->itemAtPosition(row, column);
+    if (!emojiLayoutItem) {
       continue;
     }
 
-    auto label = static_cast<EmojiLabel*>(emoji_layout_item->widget());
+    auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
     label->show();
   }
 }
@@ -164,12 +165,12 @@ void EmojiWindow::updateEmojiList() {
     selectedEmojiLabel()->setHighlighted(false);
   }
 
-  QLayoutItem* item_to_remove;
-  while ((item_to_remove = _emojiListLayout->itemAt(0))) {
-    auto label = static_cast<EmojiLabel*>(item_to_remove->widget());
+  QLayoutItem* itemToRemove;
+  while ((itemToRemove = _emojiListLayout->itemAt(0))) {
+    auto label = static_cast<EmojiLabel*>(itemToRemove->widget());
     const auto& emoji = label->emoji();
 
-    _emojiListLayout->removeItem(item_to_remove);
+    _emojiListLayout->removeItem(itemToRemove);
 
     label->hide();
   }
@@ -178,8 +179,8 @@ void EmojiWindow::updateEmojiList() {
 
   int row = 0;
   int column = 0;
-  for (auto emoji_layout_item : _emojiLayoutItems) {
-    auto label = static_cast<EmojiLabel*>(emoji_layout_item->widget());
+  for (auto emojiLayoutItem : _emojiLayoutItems) {
+    auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
     const auto& emoji = label->emoji();
 
     if (search != "" && !stringIncludes(emoji.name, search)) {
@@ -190,7 +191,7 @@ void EmojiWindow::updateEmojiList() {
       label->show();
     }
 
-    _emojiListLayout->addItem(&*emoji_layout_item, row, column);
+    _emojiListLayout->addItem(&*emojiLayoutItem, row, column);
 
     column += 1;
     if (column >= 10) {
@@ -244,7 +245,7 @@ void EmojiWindow::processKeyEvent(const QKeyEvent& event) {
     return;
   }
 
-  if (event.modifiers() & Qt::ControlModifier && event.text() == "a") {
+  if (event.modifiers() & Qt::ControlModifier && (event.text() == "a" || event.text() == "A")) {
     _searchEdit->selectAll();
     return;
   }
@@ -301,32 +302,32 @@ void gui_main(int argc, char** argv) {
 
   QApplication app{argc, argv};
 
-  EmojiWindow emoji_window;
+  EmojiWindow window;
 
   // TODO: improve the following
-  QTimer emoji_command_processor;
-  QObject::connect(&emoji_command_processor, &QTimer::timeout, [&emoji_window]() {
+  QTimer emojiCommandProcessor;
+  QObject::connect(&emojiCommandProcessor, &QTimer::timeout, [&window]() {
     std::shared_ptr<EmojiCommand> _command;
     if (emojiCommandQueue.pop(_command)) {
       if (auto command = std::dynamic_pointer_cast<EmojiCommandEnable>(_command)) {
-        emoji_window.commitText = command->commitText;
-        emoji_window.enable();
+        window.commitText = command->commitText;
+        window.enable();
       }
       if (auto command = std::dynamic_pointer_cast<EmojiCommandDisable>(_command)) {
-        emoji_window.disable();
+        window.disable();
       }
       if (auto command = std::dynamic_pointer_cast<EmojiCommandReset>(_command)) {
-        emoji_window.reset();
+        window.reset();
       }
       if (auto command = std::dynamic_pointer_cast<EmojiCommandSetCursorLocation>(_command)) {
-        emoji_window.setCursorLocation(*command->rect);
+        window.setCursorLocation(*command->rect);
       }
       if (auto command = std::dynamic_pointer_cast<EmojiCommandProcessKeyEvent>(_command)) {
-        emoji_window.processKeyEvent(*command->keyEvent);
+        window.processKeyEvent(*command->keyEvent);
       }
     }
   });
-  emoji_command_processor.start(5);
+  emojiCommandProcessor.start(5);
 
   app.exec();
 }

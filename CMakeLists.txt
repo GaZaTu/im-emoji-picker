@@ -68,7 +68,7 @@ if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
 
     set(SRC_FILES_IBUS
       ${SRC_FILES_COMMON}
-      src/main.cpp
+      src/ibus_main.cpp
       src/IBusEmojiEngine.cpp
     )
 

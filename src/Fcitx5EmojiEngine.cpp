@@ -9,6 +9,8 @@
 #include <fcitx-utils/keysymgen.h>
 #include <fcitx/event.h>
 #include <fcitx/inputcontext.h>
+#include <qevent.h>
+#include <qnamespace.h>
 #include <thread>
 #include <unistd.h>
 
@@ -21,7 +23,11 @@
 #define KEYCODE_ARROW_RIGHT 114
 
 void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::KeyEvent& keyEvent) {
-  log_printf("[debug] Fcitx5EmojiEngine::keyEvent code:%d key:%s isRelease:%d\n", keyEvent.key().code(), keyEvent.key().toString().data(), keyEvent.isRelease());
+  log_printf("[debug] Fcitx5EmojiEngine::keyEvent key:%s code:%d isRelease:%d\n", keyEvent.key().toString().data(), keyEvent.key().code(), keyEvent.isRelease());
+
+  if (keyEvent.key().isModifier()) {
+    return;
+  }
 
   QKeyEvent::Type _type = keyEvent.isRelease() ? QKeyEvent::KeyRelease : QKeyEvent::KeyPress;
   int _key = 0;
@@ -59,11 +65,16 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
     _modifiers = _modifiers | Qt::ShiftModifier;
   }
   QString _text = QString::fromStdString(keyEvent.key().toString());
+  _text = _text.right(1);
 
   if (_key != 0 || (_text.length() == 1 && isascii(_text.at(0).toLatin1()))) {
     emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
 
     keyEvent.filterAndAccept();
+  }
+
+  if (_key == Qt::Key_Return && _type == QKeyEvent::KeyRelease) {
+    sendCursorLocation(keyEvent.inputContext());
   }
 }
 
@@ -73,8 +84,8 @@ void Fcitx5EmojiEngine::activate(const fcitx::InputMethodEntry& entry, fcitx::In
   emojiCommandQueue.push(std::make_shared<EmojiCommandEnable>([this, inputContext{event.inputContext()}](const std::string& text) {
     inputContext->commitString(text);
 
-    usleep(10000);
-    sendCursorLocation(inputContext);
+    // usleep(10000);
+    // sendCursorLocation(inputContext);
   }));
 
   sendCursorLocation(event.inputContext());
