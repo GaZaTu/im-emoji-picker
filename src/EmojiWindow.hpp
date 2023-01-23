@@ -122,6 +122,7 @@ private:
   bool _gendersDisabled = true;
   bool _useSystemEmojiFont = false;
   bool _useSystemEmojiFontWidthHeuristics = true;
+  int _searchEditTextOffset = 0;
 
   bool isDisabledEmoji(const Emoji& emoji);
 

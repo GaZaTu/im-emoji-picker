@@ -70,14 +70,22 @@ int invalidEmojiWidth = 0;
 
 bool fontSupportsEmoji(const QFontMetrics& metrics, int textWidth) {
   if (invalidEmojiWidth == 0) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
     invalidEmojiWidth = metrics.horizontalAdvance(u8"\U0001FFFD");
+#else
+    invalidEmojiWidth = metrics.width(u8"\U0001FFFD");
+#endif
   }
 
   return textWidth != invalidEmojiWidth;
 }
 
 bool fontSupportsEmoji(const QFontMetrics& metrics, const QString& text) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
   int textWidth = metrics.horizontalAdvance(text);
+#else
+  int textWidth = metrics.width(text);
+#endif
 
   return fontSupportsEmoji(metrics, textWidth);
 }
@@ -85,6 +93,7 @@ bool fontSupportsEmoji(const QFontMetrics& metrics, const QString& text) {
 const Emoji& EmojiLabel::emoji() const {
   return _emoji;
 }
+
 void EmojiLabel::setEmoji(const Emoji& emoji, int w, int h) {
   _emoji = emoji;
 
@@ -93,38 +102,53 @@ void EmojiLabel::setEmoji(const Emoji& emoji, int w, int h) {
 
   setAccessibleName(QString::fromStdString(_emoji.name));
 
-  // if (EmojiPickerSettings::snapshot().useSystemEmojiFont()) {
-    QString text = QString::fromStdString(_emoji.code);
+  QPixmap emojiPixmap = getPixmapByEmojiStr(_emoji.code);
+  _hasRealEmoji = !emojiPixmap.isNull();
 
-    QFont textFont = font();
-    textFont.setPixelSize(28);
-
-  //   if (EmojiPickerSettings::snapshot().useSystemEmojiFontWidthHeuristics()) {
-  //     if (defaultEmojiWidth == 0) {
-  //       defaultEmojiWidth = fontMetrics().horizontalAdvance(u8"\U0001F600");
-  //     }
-
-  //     int textWidth = fontMetrics().horizontalAdvance(text);
-  //     if (textWidth > defaultEmojiWidth) {
-  //       double multiplier = (double)defaultEmojiWidth / (double)textWidth;
-  //       textFont.setPixelSize((double)textFont.pixelSize() * multiplier);
-  //     }
-  //   }
-
-  //   setFont(textFont);
-  //   setText(text);
-  // } else {
-    QPixmap emojiPixmap = getPixmapByEmojiStr(_emoji.code);
-    if (emojiPixmap.isNull()) {
-      setText(QString::fromStdString(_emoji.code));
-      return;
-    }
-
+  if (_hasRealEmoji && !_useSystemEmojiFont) {
     emojiPixmap = emojiPixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     emojiPixmap.setDevicePixelRatio(_devicePixelRatio);
 
     setPixmap(emojiPixmap);
-  // }
+  } else if (_hasRealEmoji) {
+    QString text = QString::fromStdString(_emoji.code);
+
+    QFont textFont = font();
+    textFont.setPixelSize(w);
+
+    if (_useSystemEmojiFontWidthHeuristics) {
+      if (defaultEmojiWidth == 0) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+        defaultEmojiWidth = fontMetrics().horizontalAdvance(u8"\U0001F600");
+#else
+        defaultEmojiWidth = fontMetrics().width(u8"\U0001F600");
+#endif
+      }
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+      int textWidth = fontMetrics().horizontalAdvance(text);
+#else
+      int textWidth = fontMetrics().width(text);
+#endif
+      if (textWidth > defaultEmojiWidth) {
+        double multiplier = (double)defaultEmojiWidth / (double)textWidth;
+        textFont.setPixelSize((double)textFont.pixelSize() * multiplier);
+      }
+    }
+
+    setFont(textFont);
+    setText(text);
+    setMaximumSize(w * 1.10, h * 1.10);
+  } else {
+    QString text = QString::fromStdString(_emoji.code);
+
+    QFont textFont = font();
+    textFont.setPixelSize(w * 0.45);
+
+    setFont(textFont);
+    setText(text);
+    setMaximumSize(w * 2.45, h * 1.10);
+  }
 }
 
 bool EmojiLabel::highlighted() const {
@@ -134,6 +158,7 @@ bool EmojiLabel::highlighted() const {
 
   return _shadowEffect->isEnabled();
 }
+
 void EmojiLabel::setHighlighted(bool highlighted) {
   // QGraphicsDropShadowEffect breaks QPixmap::setDevicePixelRatio
   // https://bugreports.qt.io/browse/QTBUG-65035
@@ -164,4 +189,8 @@ void EmojiLabel::mouseMoveEvent(QMouseEvent* ev) {
   }
 
   QLabel::mouseMoveEvent(ev);
+}
+
+bool EmojiLabel::hasRealEmoji() const {
+  return _hasRealEmoji;
 }

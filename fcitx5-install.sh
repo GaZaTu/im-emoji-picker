@@ -1,8 +1,8 @@
 #!/bin/sh
 
-mkdir -p /usr/share/fcitx5/addon
-mkdir -p /usr/share/fcitx5/inputmethod
-mkdir -p /usr/lib/fcitx5
+mkdir -m 755 -p /usr/share/fcitx5/addon
+mkdir -m 755 -p /usr/share/fcitx5/inputmethod
+mkdir -m 755 -p /usr/lib/fcitx5
 
 ln -s $(realpath dank-emoji-picker-fcitx5-addon.conf) /usr/share/fcitx5/addon/fcitx5emoji.conf
 ln -s $(realpath dank-emoji-picker-fcitx5.conf) /usr/share/fcitx5/inputmethod/fcitx5emoji.conf

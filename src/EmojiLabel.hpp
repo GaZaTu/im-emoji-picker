@@ -18,6 +18,8 @@ public:
   bool highlighted() const;
   void setHighlighted(bool highlighted);
 
+  bool hasRealEmoji() const;
+
 signals:
   void mousePressed(QMouseEvent* ev);
 
@@ -27,9 +29,13 @@ protected:
 
 private:
   Emoji _emoji;
+  bool _hasRealEmoji = false;
   double _devicePixelRatio;
 
   QGraphicsDropShadowEffect* _shadowEffect = new QGraphicsDropShadowEffect();
+
+  bool _useSystemEmojiFont = false;
+  bool _useSystemEmojiFontWidthHeuristics = true;
 };
 
 bool fontSupportsEmoji(const QFontMetrics& metrics, const QString& text);

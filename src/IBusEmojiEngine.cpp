@@ -115,6 +115,15 @@ static void ibus_emoji_engine_reset(IBusEngine* engine) {
 static gboolean ibus_emoji_engine_process_key_event(IBusEngine* engine, guint keyval, guint keycode, guint modifiers) {
   log_printf("[debug] ibus_emoji_engine_process_key_event keyval:%c keycode:%d modifiers:%d\n", keyval, keycode, modifiers);
 
+  switch (keyval) {
+  case IBUS_KEY_Control_L:
+  case IBUS_KEY_Control_R:
+  case IBUS_KEY_Shift_L:
+  case IBUS_KEY_Shift_R:
+  case IBUS_KEY_Delete:
+    return FALSE;
+  }
+
   QKeyEvent::Type _type = (modifiers & IBUS_RELEASE_MASK) ? QKeyEvent::KeyRelease : QKeyEvent::KeyPress;
   int _key = 0;
   switch (keycode) {
@@ -159,7 +168,7 @@ static gboolean ibus_emoji_engine_process_key_event(IBusEngine* engine, guint ke
   EmojiAction action = getEmojiActionForQKeyEvent(qevent);
 
   if (action != EmojiAction::INVALID) {
-    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(new QKeyEvent(_type, _key, _modifiers, _text)));
+    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(qevent));
 
     return TRUE;
   } else {

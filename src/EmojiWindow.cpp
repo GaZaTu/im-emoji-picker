@@ -30,8 +30,7 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
   setWindowOpacity(0.95);
   setFocusPolicy(Qt::NoFocus);
   setAttribute(Qt::WA_ShowWithoutActivating);
-
-  resize(360, 200);
+  setFixedSize(340, 200);
 
   for (const auto& emoji : emojis) {
     auto emojiLayoutWidget = new EmojiLabel(_emojiListWidget, emoji);
@@ -44,8 +43,6 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
   _searchContainerWidget->setLayout(_searchContainerLayout);
   _searchContainerLayout->setStackingMode(QStackedLayout::StackAll);
 
-  _searchEdit->setTextMargins(1, 0, 0, 0);
-
   _searchCompletion->setIndent(_searchEdit->fontMetrics().averageCharWidth());
   QColor _searchCompletionTextColor = _searchEdit->palette().text().color();
   _searchCompletionTextColor.setAlphaF(0.6);
@@ -55,7 +52,8 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
   _searchContainerLayout->addWidget(_searchEdit);
 
   _emojiListWidget->setLayout(_emojiListLayout);
-  _emojiListLayout->setContentsMargins(4, 4, 0, 4);
+  _emojiListLayout->setContentsMargins(4, 4, 4, 4);
+  _emojiListLayout->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
   _emojiListScroll->setWidgetResizable(true);
   _emojiListScroll->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -154,14 +152,18 @@ void EmojiWindow::updateSearchCompletion() {
   }
 
   int indexOfText = std::max(completion.indexOf(_searchEdit->text(), 0, Qt::CaseInsensitive), 0);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
   int textWidth = _searchEdit->fontMetrics().horizontalAdvance(completion.left(indexOfText));
+#else
+  int textWidth = _searchEdit->fontMetrics().width(completion.left(indexOfText));
+#endif
 
   completion.replace(indexOfText, _searchEdit->text().length(), _searchEdit->text());
-  if (completion.length() > 36) {
-    completion = completion.left(36) + "...";
+  if (completion.length() > 42) {
+    completion = completion.left(42) + "...";
   }
 
-  _searchEdit->setTextMargins(textWidth, 0, 0, 0);
+  _searchEdit->setTextMargins(textWidth + _searchEditTextOffset, 0, 0, 0);
 
   _searchCompletion->setText(completion);
 }
@@ -207,33 +209,46 @@ void EmojiWindow::updateEmojiList() {
 
   switch (_mode) {
   case ViewMode::MRU: {
-    int row = 0;
-    int column = 0;
-    for (const auto& emoji : _emojiMRU) {
-      auto emojiLayoutItemIterator = std::find_if(_emojiLayoutItems.begin(), _emojiLayoutItems.end(), [&emoji](std::shared_ptr<QWidgetItem> emojiLayoutItem) {
+    if (search == "") {
+      int row = 0;
+      int column = 0;
+      for (const auto& emoji : _emojiMRU) {
+        auto emojiLayoutItemIterator = std::find_if(_emojiLayoutItems.begin(), _emojiLayoutItems.end(), [&emoji](std::shared_ptr<QWidgetItem> emojiLayoutItem) {
+          auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
+          auto matches = (label->emoji() == emoji);
+
+          return matches;
+        });
+        if (emojiLayoutItemIterator == _emojiLayoutItems.end()) {
+          continue;
+        }
+
+        auto emojiLayoutItem = *emojiLayoutItemIterator;
+
         auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
-        auto matches = (label->emoji() == emoji);
+        label->show();
 
-        return matches;
-      });
-      if (emojiLayoutItemIterator == _emojiLayoutItems.end()) {
-        continue;
+        int colspan = 1;
+        if (!label->hasRealEmoji()) {
+          colspan = 2;
+        }
+
+        if ((column + colspan) > 10) {
+          column = 0;
+          row += 1;
+        }
+
+        _emojiListLayout->addItem(&*emojiLayoutItem, row, column, 1, colspan, Qt::AlignHCenter | Qt::AlignBaseline);
+
+        column += colspan;
+        if (column >= 10) {
+          column = 0;
+          row += 1;
+        }
       }
-
-      auto emojiLayoutItem = *emojiLayoutItemIterator;
-
-      auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
-      label->show();
-
-      _emojiListLayout->addItem(&*emojiLayoutItem, row, column);
-
-      column += 1;
-      if (column >= 10) {
-        column = 0;
-        row += 1;
-      }
+      break;
     }
-    break;
+    // fallthrough if search != ""
   }
 
   case ViewMode::LIST: {
@@ -255,9 +270,14 @@ void EmojiWindow::updateEmojiList() {
         label->show();
       }
 
-      _emojiListLayout->addItem(&*emojiLayoutItem, row, column);
+      int colspan = 1;
+      if (!label->hasRealEmoji()) {
+        colspan = 2;
+      }
 
-      column += 1;
+      _emojiListLayout->addItem(&*emojiLayoutItem, row, column, 1, colspan, Qt::AlignHCenter | Qt::AlignBaseline);
+
+      column += colspan;
       if (column >= 10) {
         column = 0;
         row += 1;
