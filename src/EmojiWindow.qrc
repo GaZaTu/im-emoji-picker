@@ -1,9 +1,9 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
   <qresource>
-    <file>res/dank-emoji-picker.png</file>
     <!-- <file>EmojiWindow.qss</file> -->
-    <!-- <file>aliases/github-emojis.ini</file> -->
-    <!-- <file>aliases/gitmoji-emojis.ini</file> -->
+    <file>res/dank-emoji-picker.png</file>
+    <file>res/aliases/github-emojis.ini</file>
+    <file>res/aliases/gitmoji-emojis.ini</file>
   </qresource>
 </RCC>

@@ -196,22 +196,25 @@ const GITHUB = process.argv.includes('GITHUB')
 const GITMOJI = process.argv.includes('GITMOJI')
 
 if (GITHUB) {
+  const githubEmojis = await fetchEmojiAliasesFromGithub()
+
   const githubEmojisIni =
 `
-[AliasesMap]
-${(await fetchEmojiAliasesFromGithub()).map(emoji => `${emoji.name}=${emoji.charCodes.map(c => `\\x${c.toString(16)}`).join('')}`).join('\n')}
+[AliasesList]
+${githubEmojis.map(({ name, charCodes }, i) => `${i + 1}\\alias=${name}\n${i + 1}\\value=${charCodes.map(c => `\\x${c.toString(16)}`).join('')}`).join('\n')}
+size=${githubEmojis.length}
 `
 
-  await writeFile(`${__dirname}/../src/aliases/github-emojis.ini`, githubEmojisIni.trimStart())
+  await writeFile(`${__dirname}/../src/res/aliases/github-emojis.ini`, githubEmojisIni.trimStart())
 }
 
 if (GITMOJI) {
   const gitmojiEmojisIni =
 `
 [AliasesList]
-${Object.entries(gitmojiMap).map(([key, str], i) => `${i + 1}\\emojiKey=${key}\n${i + 1}\\emojiStr=${str}`).join('\n')}
+${Object.entries(gitmojiMap).map(([key, str], i) => `${i + 1}\\alias=${key}\n${i + 1}\\value=${str}`).join('\n')}
 size=${Object.keys(gitmojiMap).length}
 `
 
-  await writeFile(`${__dirname}/../src/aliases/gitmoji-emojis.ini`, gitmojiEmojisIni.trimStart())
+  await writeFile(`${__dirname}/../src/res/aliases/gitmoji-emojis.ini`, gitmojiEmojisIni.trimStart())
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EmojiSettings.hpp"
 #include "emojis.hpp"
 #include <QGraphicsDropShadowEffect>
 #include <QLabel>
@@ -9,8 +10,8 @@ class EmojiLabel : public QLabel {
   Q_OBJECT
 
 public:
-  explicit EmojiLabel(QWidget* parent = nullptr);
-  explicit EmojiLabel(QWidget* parent, const Emoji& emoji);
+  explicit EmojiLabel(QWidget* parent, const EmojiSettings& settings);
+  explicit EmojiLabel(QWidget* parent, const EmojiSettings& settings, const Emoji& emoji);
 
   const Emoji& emoji() const;
   void setEmoji(const Emoji& emoji, int w = 24, int h = 24);
@@ -34,8 +35,7 @@ private:
 
   QGraphicsDropShadowEffect* _shadowEffect = new QGraphicsDropShadowEffect();
 
-  bool _useSystemEmojiFont = false;
-  bool _useSystemEmojiFontWidthHeuristics = true;
+  const EmojiSettings& _settings;
 };
 
 bool fontSupportsEmoji(const QFontMetrics& metrics, const QString& text);

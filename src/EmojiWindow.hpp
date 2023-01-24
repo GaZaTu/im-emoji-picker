@@ -1,11 +1,13 @@
 #pragma once
 
 #include "EmojiLabel.hpp"
+#include "EmojiSettings.hpp"
 #include "ThreadsafeQueue.hpp"
 #include <QGridLayout>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QScrollArea>
+#include <QStackedLayout>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <functional>
@@ -15,7 +17,7 @@
 #include <qstatusbar.h>
 #include <qwidget.h>
 #include <string>
-#include <QStackedLayout>
+#include <unordered_set>
 #include <vector>
 
 extern std::function<void()> resetInputMethodEngine;
@@ -71,7 +73,12 @@ enum class EmojiAction {
   DISABLE,
   COMMIT_EMOJI,
   SWITCH_VIEW_MODE,
-  CHANGE_SELECTED_EMOJI,
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT,
+  PAGE_UP,
+  PAGE_DOWN,
   CUT_SELECTION_IN_SEARCH,
   REMOVE_CHAR_IN_SEARCH,
   INSERT_CHAR_IN_SEARCH,
@@ -95,7 +102,10 @@ public Q_SLOTS:
   void processKeyEvent(const QKeyEvent* event);
 
 private:
+  EmojiSettings _settings;
+
   std::vector<std::shared_ptr<QWidgetItem>> _emojiLayoutItems;
+  std::vector<std::shared_ptr<QWidgetItem>> _kaomojiLayoutItems;
 
   int _selectedRow = 0;
   int _selectedColumn = 0;
@@ -114,30 +124,32 @@ private:
   QWidget* _emojiListWidget = new QWidget(_emojiListScroll);
   QGridLayout* _emojiListLayout = new QGridLayout(_emojiListWidget);
 
+  QStatusBar* _statusBar = new QStatusBar(this);
+  EmojiLabel* _mruModeLabel = new EmojiLabel(_statusBar, _settings);
+  EmojiLabel* _listModeLabel = new EmojiLabel(_statusBar, _settings);
+  EmojiLabel* _kaomojiModeLabel = new EmojiLabel(_statusBar, _settings);
+
+  void addItemToEmojiList(QLayoutItem* emojiLayoutItem, EmojiLabel* label, int& row, int& column);
+
   void updateSearchCompletion();
   void updateEmojiList();
 
-  short _maxEmojiVersion = -1;
-  bool _skinTonesDisabled = true;
-  bool _gendersDisabled = true;
-  bool _useSystemEmojiFont = false;
-  bool _useSystemEmojiFontWidthHeuristics = true;
-  int _searchEditTextOffset = 0;
+  bool emojiMatchesSearch(const Emoji& emoji, const std::string& search, std::string& found);
+  bool emojiMatchesSearch(const Emoji& emoji, const std::string& search);
 
-  bool isDisabledEmoji(const Emoji& emoji);
+  std::unordered_set<std::string> _disabledEmojis;
+
+  std::unordered_map<std::string, std::vector<std::string>> _emojiAliases;
 
   std::vector<Emoji> _emojiMRU;
 
   enum class ViewMode {
     MRU,
     LIST,
+    KAOMOJI,
   };
 
   ViewMode _mode = ViewMode::MRU;
-
-  QStatusBar* _statusBar = new QStatusBar(this);
-  EmojiLabel* _mruModeLabel = new EmojiLabel(_statusBar);
-  EmojiLabel* _listModeLabel = new EmojiLabel(_statusBar);
 };
 
 void gui_main(int argc, char** argv);

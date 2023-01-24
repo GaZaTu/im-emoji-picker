@@ -29,9 +29,11 @@ set(SRC_FILES_COMMON
   src/logging.cpp
   src/emojis.cpp
   src/emojis.qrc
+  src/kaomojis.cpp
+  src/EmojiSettings.cpp
   src/EmojiWindow.cpp
+  src/EmojiWindow.qrc
   src/EmojiLabel.cpp
-  src/EmojiCache.cpp
 )
 
 if ("${ONLY_IBUS}" STREQUAL "1")

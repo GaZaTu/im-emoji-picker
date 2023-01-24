@@ -7,11 +7,11 @@
 #include <unicode/schriter.h>
 #include <unicode/unistr.h>
 
-EmojiLabel::EmojiLabel(QWidget* parent) : QLabel(parent) {
+EmojiLabel::EmojiLabel(QWidget* parent, const EmojiSettings& settings) : QLabel(parent), _settings(settings) {
   setGraphicsEffect(_shadowEffect);
   setMouseTracking(true);
 
-  // if (EmojiPickerSettings::snapshot().useSystemQtTheme()) {
+  // if (_settings.useSystemQtTheme()) {
   _shadowEffect->setColor(palette().text().color());
   // } else {
   //   _shadowEffect->setColor(QColor(240, 240, 240));
@@ -24,7 +24,7 @@ EmojiLabel::EmojiLabel(QWidget* parent) : QLabel(parent) {
   _devicePixelRatio = QApplication::primaryScreen()->devicePixelRatio();
 }
 
-EmojiLabel::EmojiLabel(QWidget* parent, const Emoji& emoji) : EmojiLabel(parent) {
+EmojiLabel::EmojiLabel(QWidget* parent, const EmojiSettings& settings, const Emoji& emoji) : EmojiLabel(parent, settings) {
   setEmoji(emoji);
 }
 
@@ -44,6 +44,7 @@ void getCodepointsByEmojiStr(const std::string& emojiStr, const std::string& sep
     emojiHexCodeStream << std::hex << codepoint;
   }
 }
+
 std::string getCodepointsByEmojiStr(const std::string& emojiStr, const std::string& separator) {
   std::stringstream emojiHexCodeStream;
   getCodepointsByEmojiStr(emojiStr, separator, emojiHexCodeStream);
@@ -105,7 +106,7 @@ void EmojiLabel::setEmoji(const Emoji& emoji, int w, int h) {
   QPixmap emojiPixmap = getPixmapByEmojiStr(_emoji.code);
   _hasRealEmoji = !emojiPixmap.isNull();
 
-  if (_hasRealEmoji && !_useSystemEmojiFont) {
+  if (_hasRealEmoji && !_settings.useSystemEmojiFont()) {
     emojiPixmap = emojiPixmap.scaled(w, h, Qt::KeepAspectRatio, Qt::SmoothTransformation);
     emojiPixmap.setDevicePixelRatio(_devicePixelRatio);
 
@@ -116,7 +117,7 @@ void EmojiLabel::setEmoji(const Emoji& emoji, int w, int h) {
     QFont textFont = font();
     textFont.setPixelSize(w);
 
-    if (_useSystemEmojiFontWidthHeuristics) {
+    if (_settings.useSystemEmojiFontWidthHeuristics()) {
       if (defaultEmojiWidth == 0) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
         defaultEmojiWidth = fontMetrics().horizontalAdvance(u8"\U0001F600");

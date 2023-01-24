@@ -70,8 +70,7 @@ Emoji::operator bool() const {
 }
 
 const Emoji emojis[] = {
-  {"grinning_face", u8"⁽⁽⁕◟(.öˬö.)◞⁕⁾⁾", -1},
-  // {"grinning_face", u8"\U0001F600", 1},
+  {"grinning_face", u8"\U0001F600", 1},
   {"grinning_face_with_big_eyes", u8"\U0001F603", 0},
   {"grinning_face_with_smiling_eyes", u8"\U0001F604", 0},
   {"beaming_face_with_smiling_eyes", u8"\U0001F601", 0},
