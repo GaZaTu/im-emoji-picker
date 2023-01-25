@@ -26,7 +26,9 @@ I switched from Windows 10 to Linux at work and missed filling my emails with em
 
 ### Reason For The New Emoji Picker
 
-The issue with [x11-emoji-picker](https://github.com/GaZaTu/x11-emoji-picker) is `xdotool` as the success rate for it to work is a lottery. Sometimes the target window requires focus to accept input; Sometimes it doesn't support `XText` so you need to use some hacky clipboard workaround; And sometimes it doesn't work at all. All in all a frustrating experience. Another issue is with the `x11...` in the old emoji picker. I won't switch to Wayland anytime soon but having support for it in my emoji picker would've been nice so more people can use it.
+The issue with [x11-emoji-picker](https://github.com/GaZaTu/x11-emoji-picker) is `xdotool` as the success rate for it to work is a lottery. Sometimes the target window requires focus to accept input; Sometimes it doesn't support `XText` so you need to use some hacky clipboard workaround; And sometimes it doesn't work at all. All in all a frustrating experience.
+
+Another issue is with the `x11...` in the old emoji picker. I won't switch to Wayland anytime soon but having support for it in my emoji picker would've been nice so more people can use it.
 
 ## Installation 😉
 

@@ -123,7 +123,7 @@ if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
     )
 
     install(TARGETS ${PROJECT_NAME}-ibus RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/ibus)
-    install(FILES ${PROJECT_SOURCE_DIR}/im-emoji-picker-ibus.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ibus/component)
+    install(FILES ${PROJECT_SOURCE_DIR}/ibus-component.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ibus/component RENAME im-emoji-picker-ibus.xml)
 
     # TODO maybe:
     # add_custom_target(appimage
@@ -164,8 +164,8 @@ if (NOT ("${SKIP_FCITX5}" STREQUAL "1"))
     )
 
     install(TARGETS ${PROJECT_NAME}-fcitx5 RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/fcitx5/bin)
-    install(FILES ${PROJECT_SOURCE_DIR}/im-emoji-picker-fcitx5-addon.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/addon)
-    install(FILES ${PROJECT_SOURCE_DIR}/im-emoji-picker-fcitx5.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/inputmethod)
+    install(FILES ${PROJECT_SOURCE_DIR}/fcitx5-addon.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/addon RENAME fcitx5imemojipicker.conf)
+    install(FILES ${PROJECT_SOURCE_DIR}/fcitx5-inputmethod.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/inputmethod RENAME fcitx5imemojipicker.conf)
   endif ()
 endif ()
 
