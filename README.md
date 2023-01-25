@@ -8,15 +8,15 @@ I'm basically using the same systems some people use to type Japanese or Chinese
 
 *Wayland support (Arch Linux with Sway (Wayland) and Fcitx5):*
 
-![screenshot2.png](screenshot2.png)
+![docs/screenshot2.png](docs/screenshot2.png)
 
 *System emoji font support (OpenSUSE 15.1 with KDE (XServer) and IBus):*
 
-![screenshot1.png](screenshot1.png)
+![docs/screenshot1.png](docs/screenshot1.png)
 
 *Kaomoji support (EndeavourOS with KDE (XServer) and Fcitx5):*
 
-![screenshot3.png](screenshot3.png)
+![docs/screenshot3.png](docs/screenshot3.png)
 
 ## Motivation 🤔
 
