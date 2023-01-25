@@ -1,4 +1,0 @@
-for_window {
-        [title="im-emoji-picker"] floating enable
-}
-no_focus [title="im-emoji-picker"]

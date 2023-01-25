@@ -6,10 +6,17 @@ I'm basically using the same systems some people use to type Japanese or Chinese
 
 ## Screenshots 😮
 
-*TODO*
+*Wayland support (Arch Linux with Sway (Wayland) and Fcitx5):*
+
+![screenshot2.png](screenshot2.png)
+
+*System emoji font support (OpenSUSE 15.1 with KDE (XServer) and IBus):*
 
 ![screenshot1.png](screenshot1.png)
-*with system emoji font (OpenSUSE 15.1 with KDE (XServer) and IBus)*
+
+*Kaomoji support (EndeavourOS with KDE (XServer) and Fcitx5):*
+
+![screenshot3.png](screenshot3.png)
 
 ## Motivation 🤔
 
@@ -71,7 +78,7 @@ Execute `ibus-daemon -rxR` in your terminal to create an autostart entry.
 
 Execute `ibus-setup` to open the IBus settings so you can add *I'm Emoji Picker* to your input methods and maybe change your global shortcut to change the active input method.
 
-### Settings 📓
+### Settings 📝
 
 ```ini
 ; The path of this file should be: $XDG_CONFIG_HOME/gazatu.xyz/im-emoji-picker.ini
@@ -110,6 +117,9 @@ size=2
 ```
 
 ### Known Issues 😅
+
+- On Sway and probably i3 too (maybe any tiling WM) you might need to configure a window rule to prevent the emoji picker from stealing focus
+  - example: `no_focus [title="im-emoji-picker"]`
 
 - When using Wayland neither Fcitx5 nor IBus report the correct text cursor location so the emoji picker will open either in the top left corner or in the center of the screen
 
@@ -152,7 +162,7 @@ size=2
 
 - fcitx5 or ibus
 
-### Example Commands To Install Dependencies
+### Example Commands To Install Dependencies (probably)
 
 **Arch**:
 `sudo pacman -S gcc make cmake qt5-base icu fcitx5 fcitx5-qt fcitx5-gtk`
