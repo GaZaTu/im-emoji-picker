@@ -5,7 +5,7 @@
 #include <fcitx/addonfactory.h>
 #include <fcitx/inputmethodengine.h>
 
-class Fcitx5EmojiEngine : public fcitx::InputMethodEngineV2 {
+class Fcitx5ImEmojiPickerEngine : public fcitx::InputMethodEngineV2 {
 public:
   void keyEvent(const fcitx::InputMethodEntry& entry, fcitx::KeyEvent& keyEvent) override;
 
@@ -19,7 +19,7 @@ private:
   void sendCursorLocation(fcitx::InputContext* inputContext);
 };
 
-class Fcitx5EmojiEngineFactory : public fcitx::AddonFactory {
+class Fcitx5ImEmojiPickerEngineFactory : public fcitx::AddonFactory {
 public:
   fcitx::AddonInstance* create(fcitx::AddonManager* manager) override;
 };

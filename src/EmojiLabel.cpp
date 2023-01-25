@@ -7,7 +7,7 @@
 #include <unicode/schriter.h>
 #include <unicode/unistr.h>
 
-EmojiLabel::EmojiLabel(QWidget* parent, const EmojiSettings& settings) : QLabel(parent), _settings(settings) {
+EmojiLabel::EmojiLabel(QWidget* parent, const EmojiPickerSettings& settings) : QLabel(parent), _settings(settings) {
   setGraphicsEffect(_shadowEffect);
   setMouseTracking(true);
 
@@ -24,7 +24,7 @@ EmojiLabel::EmojiLabel(QWidget* parent, const EmojiSettings& settings) : QLabel(
   _devicePixelRatio = QApplication::primaryScreen()->devicePixelRatio();
 }
 
-EmojiLabel::EmojiLabel(QWidget* parent, const EmojiSettings& settings, const Emoji& emoji) : EmojiLabel(parent, settings) {
+EmojiLabel::EmojiLabel(QWidget* parent, const EmojiPickerSettings& settings, const Emoji& emoji) : EmojiLabel(parent, settings) {
   setEmoji(emoji);
 }
 

@@ -1,4 +1,4 @@
-#include "EmojiSettings.hpp"
+#include "EmojiPickerSettings.hpp"
 #include "EmojiLabel.hpp"
 #include <QCoreApplication>
 #include <QStandardPaths>
@@ -34,8 +34,8 @@ void writeQSettingsArrayFromStdVector(QSettings& settings, const QString& prefix
   settings.endArray();
 }
 
-void EmojiSettings::writeDefaultsToDisk() {
-  EmojiSettings s;
+void EmojiPickerSettings::writeDefaultsToDisk() {
+  EmojiPickerSettings s;
 
   s.skinTonesDisabled(s.skinTonesDisabled());
   s.gendersDisabled(s.gendersDisabled());
@@ -51,22 +51,22 @@ void EmojiSettings::writeDefaultsToDisk() {
   s.searchEditTextOffset(s.searchEditTextOffset());
 }
 
-EmojiSettings::EmojiSettings() : QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName(), nullptr) {
+EmojiPickerSettings::EmojiPickerSettings() : QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName(), nullptr) {
 }
 
-bool EmojiSettings::skinTonesDisabled() const {
+bool EmojiPickerSettings::skinTonesDisabled() const {
   return value("skinTonesDisabled", false).toBool();
 }
 
-void EmojiSettings::skinTonesDisabled(bool skinTonesDisabled) {
+void EmojiPickerSettings::skinTonesDisabled(bool skinTonesDisabled) {
   setValue("skinTonesDisabled", skinTonesDisabled);
 }
 
-bool EmojiSettings::gendersDisabled() const {
+bool EmojiPickerSettings::gendersDisabled() const {
   return value("gendersDisabled", false).toBool();
 }
 
-void EmojiSettings::gendersDisabled(bool gendersDisabled) {
+void EmojiPickerSettings::gendersDisabled(bool gendersDisabled) {
   setValue("gendersDisabled", gendersDisabled);
 }
 
@@ -78,15 +78,15 @@ void EmojiSettings::gendersDisabled(bool gendersDisabled) {
 //   setValue("useSystemQtTheme", useSystemQtTheme);
 // }
 
-int EmojiSettings::maxEmojiVersion() const {
+int EmojiPickerSettings::maxEmojiVersion() const {
   return value("maxEmojiVersion", -1).toInt();
 }
 
-void EmojiSettings::maxEmojiVersion(int maxEmojiVersion) {
+void EmojiPickerSettings::maxEmojiVersion(int maxEmojiVersion) {
   setValue("maxEmojiVersion", maxEmojiVersion);
 }
 
-bool EmojiSettings::isDisabledEmoji(const Emoji& emoji, const QFontMetrics& fontMetrics) {
+bool EmojiPickerSettings::isDisabledEmoji(const Emoji& emoji, const QFontMetrics& fontMetrics) {
   if (maxEmojiVersion() != -1 && (emoji.version > maxEmojiVersion())) {
     return true;
   }
@@ -113,19 +113,19 @@ std::vector<std::string> defaultEmojiAliasFiles = {
   ":/res/aliases/gitmoji-emojis.ini",
 };
 
-std::vector<std::string> EmojiSettings::emojiAliasFiles() {
+std::vector<std::string> EmojiPickerSettings::emojiAliasFiles() {
   return readQSettingsArrayToStdVector<std::string>(*this, "emojiAliasFiles", [](QSettings& settings) -> std::string {
     return settings.value("path").toString().toStdString();
   }, defaultEmojiAliasFiles);
 }
 
-void EmojiSettings::emojiAliasFiles(const std::vector<std::string>& emojiAliasFiles) {
+void EmojiPickerSettings::emojiAliasFiles(const std::vector<std::string>& emojiAliasFiles) {
   writeQSettingsArrayFromStdVector<std::string>(*this, "emojiAliasFiles", emojiAliasFiles, [](QSettings& settings, const std::string& exception) -> void {
     settings.setValue("path", QString::fromStdString(exception));
   });
 }
 
-std::unordered_map<std::string, std::vector<std::string>> EmojiSettings::emojiAliases() {
+std::unordered_map<std::string, std::vector<std::string>> EmojiPickerSettings::emojiAliases() {
   std::unordered_map<std::string, std::vector<std::string>> result;
 
   for (const std::string& path : emojiAliasFiles()) {
@@ -154,66 +154,66 @@ std::unordered_map<std::string, std::vector<std::string>> EmojiSettings::emojiAl
 //   setValue("customQssFilePath", QString::fromStdString(customQssFilePath));
 // }
 
-double EmojiSettings::windowOpacity() const {
+double EmojiPickerSettings::windowOpacity() const {
   return value("windowOpacity", 0.90).toDouble();
 }
 
-void EmojiSettings::windowOpacity(double windowOpacity) {
+void EmojiPickerSettings::windowOpacity(double windowOpacity) {
   setValue("windowOpacity", windowOpacity);
 }
 
-bool EmojiSettings::closeAfterFirstInput() const {
+bool EmojiPickerSettings::closeAfterFirstInput() const {
   return value("closeAfterFirstInput", false).toBool();
 }
 
-void EmojiSettings::closeAfterFirstInput(bool closeAfterFirstInput) {
+void EmojiPickerSettings::closeAfterFirstInput(bool closeAfterFirstInput) {
   setValue("closeAfterFirstInput", closeAfterFirstInput);
 }
 
-bool EmojiSettings::hideStatusBar() const {
+bool EmojiPickerSettings::hideStatusBar() const {
   return value("hideStatusBar", false).toBool();
 }
 
-void EmojiSettings::hideStatusBar(bool hideStatusBar) {
+void EmojiPickerSettings::hideStatusBar(bool hideStatusBar) {
   setValue("hideStatusBar", hideStatusBar);
 }
 
-bool EmojiSettings::useSystemEmojiFont() const {
+bool EmojiPickerSettings::useSystemEmojiFont() const {
   return value("useSystemEmojiFont", false).toBool();
 }
 
-void EmojiSettings::useSystemEmojiFont(bool useSystemEmojiFont) {
+void EmojiPickerSettings::useSystemEmojiFont(bool useSystemEmojiFont) {
   setValue("useSystemEmojiFont", useSystemEmojiFont);
 }
 
-bool EmojiSettings::useSystemEmojiFontWidthHeuristics() const {
+bool EmojiPickerSettings::useSystemEmojiFontWidthHeuristics() const {
   return value("useSystemEmojiFontWidthHeuristics", true).toBool();
 }
 
-void EmojiSettings::useSystemEmojiFontWidthHeuristics(bool useSystemEmojiFontWidthHeuristics) {
+void EmojiPickerSettings::useSystemEmojiFontWidthHeuristics(bool useSystemEmojiFontWidthHeuristics) {
   setValue("useSystemEmojiFontWidthHeuristics", useSystemEmojiFontWidthHeuristics);
 }
 
-int EmojiSettings::searchEditTextOffset() const {
+int EmojiPickerSettings::searchEditTextOffset() const {
   return value("searchEditTextOffset", 0).toInt();
 }
 
-void EmojiSettings::searchEditTextOffset(int searchEditTextOffset) {
+void EmojiPickerSettings::searchEditTextOffset(int searchEditTextOffset) {
   setValue("searchEditTextOffset", searchEditTextOffset);
 }
 
-EmojiCache::EmojiCache() : QSettings(path(), QSettings::IniFormat) {
+EmojiPickerCache::EmojiPickerCache() : QSettings(path(), QSettings::IniFormat) {
 }
 
-EmojiCache::~EmojiCache() {
+EmojiPickerCache::~EmojiPickerCache() {
   setValue("version", QCoreApplication::applicationVersion());
 }
 
-QString EmojiCache::path() {
+QString EmojiPickerCache::path() {
   return QStandardPaths::writableLocation(QStandardPaths::CacheLocation) + "/cache.ini";
 }
 
-std::vector<Emoji> EmojiCache::emojiMRU() {
+std::vector<Emoji> EmojiPickerCache::emojiMRU() {
   auto prefix = "emojiMRU";
   auto handler = [](QSettings& settings) -> Emoji {
     return {
@@ -226,7 +226,7 @@ std::vector<Emoji> EmojiCache::emojiMRU() {
   return mru;
 }
 
-void EmojiCache::emojiMRU(const std::vector<Emoji>& mru) {
+void EmojiPickerCache::emojiMRU(const std::vector<Emoji>& mru) {
   auto prefix = "emojiMRU";
   auto handler = [](QSettings& settings, const Emoji& emoji) -> void {
     settings.setValue("emojiKey", QString::fromStdString(emoji.name));

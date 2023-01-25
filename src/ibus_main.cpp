@@ -1,8 +1,9 @@
 #if __has_include("ibus.h")
 
-#include "IBusEmojiEngine.hpp"
+#include "IBusImEmojiPickerEngine.hpp"
+// order matters fdm
+#include "EmojiPickerWindow.hpp"
 #include "logging.hpp"
-#include "EmojiWindow.hpp"
 #include <signal.h>
 #include <thread>
 
@@ -44,8 +45,8 @@ int main(int argc, char** argv) {
     ibus_bus_set_global_engine(bus, original_engine_name.data());
   };
 
-  ibus_factory_add_engine(factory, "dank-emoji-picker", IBUS_TYPE_EMOJI_ENGINE);
-  if (!ibus_bus_request_name(bus, "xyz.gazatu.DankEmojiPicker", 0)) {
+  ibus_factory_add_engine(factory, "im-emoji-picker", IBUS_TYPE_IM_EMOJI_PICKER_ENGINE);
+  if (!ibus_bus_request_name(bus, "xyz.gazatu.ImEmojiPicker", 0)) {
     log_printf("[error] could not requst bus name");
     exit(EXIT_FAILURE);
   }

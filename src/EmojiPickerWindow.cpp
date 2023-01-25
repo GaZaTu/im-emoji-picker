@@ -1,11 +1,20 @@
-#include "EmojiWindow.hpp"
+#include "EmojiPickerWindow.hpp"
+#include "EmojiLabel.hpp"
+#include "emojis.hpp"
+#include "kaomojis.hpp"
+#include "logging.hpp"
+#include <QApplication>
+#include <QClipboard>
 #include <QCoreApplication>
+#include <QDesktopServices>
+#include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QLabel>
 #include <QLineEdit>
+#include <QScreen>
 #include <QStatusBar>
+#include <QStyle>
 #include <QTimer>
-#include <QApplication>
 #include <algorithm>
 #include <exception>
 #include <memory>
@@ -14,25 +23,28 @@
 #include <qscrollarea.h>
 #include <qwindowdefs.h>
 #include <vector>
-#include "EmojiSettings.hpp"
-#include "EmojiLabel.hpp"
-#include "emojis.hpp"
-#include "logging.hpp"
-#include <QClipboard>
-#include "kaomojis.hpp"
-#include "EmojiSettings.hpp"
 
 Emoji convertKaomojiToEmoji(const Kaomoji& kaomoji) {
   return Emoji{kaomoji.name, kaomoji.text, -1};
+}
+
+void moveQWidgetToCenter(QWidget* window) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+  auto rect = QApplication::screenAt(QCursor::pos())->geometry();
+#else
+  auto rect = qApp->desktop()->availableGeometry(QCursor::pos());
+#endif
+
+  window->setGeometry(QStyle::alignedRect(Qt::LeftToRight, Qt::AlignCenter, window->size(), rect));
 }
 
 std::function<void()> resetInputMethodEngine = []() {};
 
 ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emojiCommandQueue;
 
-EmojiWindow::EmojiWindow() : QMainWindow() {
+EmojiPickerWindow::EmojiPickerWindow() : QMainWindow() {
   setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowDoesNotAcceptFocus);
-  setWindowIcon(QIcon(":/res/dank-emoji-picker.png"));
+  setWindowIcon(QIcon(":/res/im-emoji-picker_72x72.png"));
   setWindowOpacity(_settings.windowOpacity());
   setFocusPolicy(Qt::NoFocus);
   setAttribute(Qt::WA_ShowWithoutActivating);
@@ -98,10 +110,10 @@ EmojiWindow::EmojiWindow() : QMainWindow() {
     setStatusBar(_statusBar);
   }
 
-  EmojiSettings::writeDefaultsToDisk();
+  EmojiPickerSettings::writeDefaultsToDisk();
 }
 
-EmojiLabel* EmojiWindow::selectedEmojiLabel() {
+EmojiLabel* EmojiPickerWindow::selectedEmojiLabel() {
   QLayoutItem* item = _emojiListLayout->itemAtPosition(_selectedRow, _selectedColumn);
   if (!item) {
     return nullptr;
@@ -123,7 +135,7 @@ void showEmojiRow(QGridLayout* _emojiListLayout, int row) {
   }
 }
 
-void EmojiWindow::moveSelectedEmojiLabel(int row, int column) {
+void EmojiPickerWindow::moveSelectedEmojiLabel(int row, int column) {
   if (selectedEmojiLabel()) {
     selectedEmojiLabel()->setHighlighted(false);
 
@@ -173,7 +185,7 @@ bool stringIncludes(const std::string& text, const std::string& search) {
   }
 }
 
-bool EmojiWindow::emojiMatchesSearch(const Emoji& emoji, const std::string& search, std::string& found) {
+bool EmojiPickerWindow::emojiMatchesSearch(const Emoji& emoji, const std::string& search, std::string& found) {
   if (stringIncludes(emoji.name, search)) {
     found = emoji.name;
     return true;
@@ -189,13 +201,13 @@ bool EmojiWindow::emojiMatchesSearch(const Emoji& emoji, const std::string& sear
   return false;
 }
 
-bool EmojiWindow::emojiMatchesSearch(const Emoji& emoji, const std::string& search) {
+bool EmojiPickerWindow::emojiMatchesSearch(const Emoji& emoji, const std::string& search) {
   std::string found;
 
   return emojiMatchesSearch(emoji, search, found);
 }
 
-void EmojiWindow::updateSearchCompletion() {
+void EmojiPickerWindow::updateSearchCompletion() {
   QString search = _searchEdit->text();
 
   QString completion = "";
@@ -228,7 +240,7 @@ void EmojiWindow::updateSearchCompletion() {
   _searchCompletion->setText(completion);
 }
 
-void EmojiWindow::addItemToEmojiList(QLayoutItem* emojiLayoutItem, EmojiLabel* label, int& row, int& column) {
+void EmojiPickerWindow::addItemToEmojiList(QLayoutItem* emojiLayoutItem, EmojiLabel* label, int& row, int& column) {
   int colspan = 1;
   if (!label->hasRealEmoji()) {
     colspan = 2;
@@ -248,7 +260,7 @@ void EmojiWindow::addItemToEmojiList(QLayoutItem* emojiLayoutItem, EmojiLabel* l
   }
 }
 
-void EmojiWindow::updateEmojiList() {
+void EmojiPickerWindow::updateEmojiList() {
   if (selectedEmojiLabel()) {
     selectedEmojiLabel()->setHighlighted(false);
   }
@@ -359,11 +371,13 @@ void EmojiWindow::updateEmojiList() {
   updateSearchCompletion();
 }
 
-void EmojiWindow::reset() {
+void EmojiPickerWindow::reset() {
   disable();
 }
 
-void EmojiWindow::enable() {
+void EmojiPickerWindow::enable() {
+  moveQWidgetToCenter(this);
+
   show();
 
   _settings.sync();
@@ -377,28 +391,26 @@ void EmojiWindow::enable() {
 
   _emojiAliases = _settings.emojiAliases();
 
-  _emojiMRU = EmojiCache{}.emojiMRU();
+  _emojiMRU = EmojiPickerCache{}.emojiMRU();
 
   _searchEdit->setText("");
   _searchCompletion->setText("");
   updateEmojiList();
 }
 
-void EmojiWindow::disable() {
+void EmojiPickerWindow::disable() {
   if (!isVisible()) {
     return;
   }
 
   hide();
 
-  // TODO: move to center
+  resetInputMethodEngine();
 
-  resetInputMethodEngine(); // TODO: configurable
-
-  EmojiCache{}.emojiMRU(_emojiMRU);
+  EmojiPickerCache{}.emojiMRU(_emojiMRU);
 }
 
-void EmojiWindow::setCursorLocation(const QRect* rect) {
+void EmojiPickerWindow::setCursorLocation(const QRect* rect) {
   if (rect->x() == 0 && rect->y() == 0) {
     return;
   }
@@ -484,6 +496,10 @@ EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event) {
     return EmojiAction::PAGE_DOWN;
   }
 
+  if (event->key() == Qt::Key_F4) {
+    return EmojiAction::OPEN_SETTINGS;
+  }
+
   if (event->key() == Qt::Key_Backspace) {
     return EmojiAction::REMOVE_CHAR_IN_SEARCH;
   }
@@ -491,7 +507,7 @@ EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event) {
   return EmojiAction::INSERT_CHAR_IN_SEARCH;
 }
 
-void EmojiWindow::processKeyEvent(const QKeyEvent* event) {
+void EmojiPickerWindow::processKeyEvent(const QKeyEvent* event) {
   EmojiAction action = getEmojiActionForQKeyEvent(event);
 
   switch (action) {
@@ -506,10 +522,8 @@ void EmojiWindow::processKeyEvent(const QKeyEvent* event) {
     if (selectedEmojiLabel()) {
       const EmojiLabel* label = selectedEmojiLabel();
       const Emoji& emoji = label->emoji();
+
       QApplication::clipboard()->setText(QString::fromStdString(emoji.code));
-    }
-    if (event->modifiers() & Qt::ShiftModifier) {
-      disable();
     }
     break;
 
@@ -521,6 +535,7 @@ void EmojiWindow::processKeyEvent(const QKeyEvent* event) {
     if (selectedEmojiLabel()) {
       const EmojiLabel* label = selectedEmojiLabel();
       const Emoji& emoji = label->emoji();
+
       commitText(emoji.code);
 
       if (label->hasRealEmoji()) {
@@ -531,7 +546,7 @@ void EmojiWindow::processKeyEvent(const QKeyEvent* event) {
         }
       }
     }
-    if (event->modifiers() & Qt::ShiftModifier) {
+    if (((event->modifiers() & Qt::ShiftModifier) && !_settings.closeAfterFirstInput()) || (!(event->modifiers() & Qt::ShiftModifier) && _settings.closeAfterFirstInput())) {
       disable();
     }
     break;
@@ -580,6 +595,11 @@ void EmojiWindow::processKeyEvent(const QKeyEvent* event) {
     moveSelectedEmojiLabel(4, 0);
     break;
 
+  case EmojiAction::OPEN_SETTINGS:
+    QDesktopServices::openUrl(QUrl::fromLocalFile(_settings.fileName()));
+    disable();
+    break;
+
   case EmojiAction::CUT_SELECTION_IN_SEARCH:
     if (_searchEdit->hasSelectedText()) {
       _searchEdit->setText("");
@@ -614,7 +634,11 @@ void gui_main(int argc, char** argv) {
 
   QApplication app{argc, argv};
 
-  EmojiWindow window;
+  // TODO maybe: emoji translations
+
+  // TODO maybe: if Qt system theme is not desired: app.setStyle("fusion")
+
+  EmojiPickerWindow window;
 
   // TODO: improve the following
   QTimer emojiCommandProcessor;

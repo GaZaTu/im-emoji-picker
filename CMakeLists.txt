@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7.2 FATAL_ERROR)
-project(dank-emoji-picker VERSION 0.1.0 LANGUAGES CXX)
+project(im-emoji-picker VERSION 0.1.0 LANGUAGES CXX)
 
 set(PROJECT_NAME_FULL ${PROJECT_NAME})
 set(PROJECT_ORGANIZATION gazatu.xyz)
@@ -20,6 +20,35 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
+set(CMAKE_INSTALL_PREFIX /usr)
+
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME_FULL})
+set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
+set(CPACK_PACKAGE_VENDOR ${PROJECT_ORGANIZATION})
+
+if (DEFINED PACKAGE_VERSION)
+  set(CPACK_PACKAGE_VERSION ${PACKAGE_VERSION})
+endif ()
+
+set(CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}-${CMAKE_SYSTEM_PROCESSOR})
+set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_SOURCE_DIR}/LICENSE)
+set(CPACK_RESOURCE_FILE_README ${PROJECT_SOURCE_DIR}/README.md)
+set(CPACK_PACKAGING_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+
+set(CPACK_RPM_PACKAGE_AUTOREQ ON)
+set(CPACK_RPM_PACKAGE_LICENSE "MIT")
+set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+  ${CMAKE_INSTALL_PREFIX}/share
+  ${CMAKE_INSTALL_PREFIX}/share/applications
+  ${CMAKE_INSTALL_PREFIX}/share/icons
+  ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor
+  ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/72x72
+  ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/72x72/apps
+)
+
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PROJECT_ORGANIZATION})
+
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
 find_package(ICU REQUIRED COMPONENTS uc)
 
@@ -30,9 +59,9 @@ set(SRC_FILES_COMMON
   src/emojis.cpp
   src/emojis.qrc
   src/kaomojis.cpp
-  src/EmojiSettings.cpp
-  src/EmojiWindow.cpp
-  src/EmojiWindow.qrc
+  src/EmojiPickerSettings.cpp
+  src/EmojiPickerWindow.cpp
+  src/EmojiPickerWindow.qrc
   src/EmojiLabel.cpp
 )
 
@@ -72,7 +101,7 @@ if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
     set(SRC_FILES_IBUS
       ${SRC_FILES_COMMON}
       src/ibus_main.cpp
-      src/IBusEmojiEngine.cpp
+      src/IBusImEmojiPickerEngine.cpp
     )
 
     add_executable(${PROJECT_NAME}-ibus ${SRC_FILES_IBUS})
@@ -92,6 +121,15 @@ if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
       ${GLIB_LIB}
       ${GOBJECT_LIB}
     )
+
+    install(TARGETS ${PROJECT_NAME}-ibus RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/ibus)
+    install(FILES ${PROJECT_SOURCE_DIR}/im-emoji-picker-ibus.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ibus/component)
+
+    # TODO maybe:
+    # add_custom_target(appimage
+    #   COMMAND make install DESTDIR=${CMAKE_BINARY_DIR}/_AppDir
+    #   COMMAND VERSION=dev linuxdeployqt.AppImage ${CMAKE_BINARY_DIR}/_AppDir/usr/share/applications/${PROJECT_NAME_FULL}.desktop -appimage -no-translations
+    # )
   endif ()
 endif ()
 
@@ -105,7 +143,7 @@ if (NOT ("${SKIP_FCITX5}" STREQUAL "1"))
 
     set(SRC_FILES_FCITX5
       ${SRC_FILES_COMMON}
-      src/Fcitx5EmojiEngine.cpp
+      src/Fcitx5ImEmojiPickerEngine.cpp
     )
 
     add_library(${PROJECT_NAME}-fcitx5 SHARED ${SRC_FILES_FCITX5})
@@ -124,5 +162,11 @@ if (NOT ("${SKIP_FCITX5}" STREQUAL "1"))
       ICU::uc
       Fcitx5::Core
     )
+
+    install(TARGETS ${PROJECT_NAME}-fcitx5 RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/fcitx5/bin)
+    install(FILES ${PROJECT_SOURCE_DIR}/im-emoji-picker-fcitx5-addon.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/addon)
+    install(FILES ${PROJECT_SOURCE_DIR}/im-emoji-picker-fcitx5.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/inputmethod)
   endif ()
 endif ()
+
+include(CPack)

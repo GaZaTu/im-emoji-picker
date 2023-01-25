@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EmojiLabel.hpp"
-#include "EmojiSettings.hpp"
+#include "EmojiPickerSettings.hpp"
 #include "ThreadsafeQueue.hpp"
 #include <QGridLayout>
 #include <QLineEdit>
@@ -79,6 +79,7 @@ enum class EmojiAction {
   RIGHT,
   PAGE_UP,
   PAGE_DOWN,
+  OPEN_SETTINGS,
   CUT_SELECTION_IN_SEARCH,
   REMOVE_CHAR_IN_SEARCH,
   INSERT_CHAR_IN_SEARCH,
@@ -86,13 +87,13 @@ enum class EmojiAction {
 
 EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event);
 
-struct EmojiWindow : public QMainWindow {
+struct EmojiPickerWindow : public QMainWindow {
   Q_OBJECT
 
 public:
   std::function<void(const std::string&)> commitText;
 
-  explicit EmojiWindow();
+  explicit EmojiPickerWindow();
 
 public Q_SLOTS:
   void reset();
@@ -102,7 +103,7 @@ public Q_SLOTS:
   void processKeyEvent(const QKeyEvent* event);
 
 private:
-  EmojiSettings _settings;
+  EmojiPickerSettings _settings;
 
   std::vector<std::shared_ptr<QWidgetItem>> _emojiLayoutItems;
   std::vector<std::shared_ptr<QWidgetItem>> _kaomojiLayoutItems;

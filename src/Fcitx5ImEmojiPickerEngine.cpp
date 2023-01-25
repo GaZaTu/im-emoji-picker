@@ -1,9 +1,10 @@
 #if __has_include("fcitx/inputmethodengine.h")
 
-#include "Fcitx5EmojiEngine.hpp"
-#include "EmojiWindow.hpp"
+#include "Fcitx5ImEmojiPickerEngine.hpp"
+#include "EmojiPickerWindow.hpp"
 #include "fcitx/inputmethodentry.h"
 #include "logging.hpp"
+#include <QProcess>
 #include <fcitx-utils/key.h>
 #include <fcitx-utils/keysym.h>
 #include <fcitx-utils/keysymgen.h>
@@ -13,7 +14,6 @@
 #include <qnamespace.h>
 #include <thread>
 #include <unistd.h>
-#include <QProcess>
 
 #define KEYCODE_ESCAPE 9
 #define KEYCODE_RETURN 36
@@ -23,12 +23,15 @@
 #define KEYCODE_ARROW_DOWN 116
 #define KEYCODE_ARROW_LEFT 113
 #define KEYCODE_ARROW_RIGHT 114
+#define KEYCODE_PAGE_UP 112
+#define KEYCODE_PAGE_DOWN 117
+#define KEYCODE_F4 70
 
 #define KEYCODE_SPACE 65
 #define KEYCODE_UNDERSCORE 61
 
-void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::KeyEvent& keyEvent) {
-  log_printf("[debug] Fcitx5EmojiEngine::keyEvent key:%s code:%d isRelease:%d\n", keyEvent.key().toString().data(), keyEvent.key().code(), keyEvent.isRelease());
+void Fcitx5ImEmojiPickerEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::KeyEvent& keyEvent) {
+  log_printf("[debug] Fcitx5ImEmojiPickerEngine::keyEvent key:%s code:%d isRelease:%d\n", keyEvent.key().toString().data(), keyEvent.key().code(), keyEvent.isRelease());
 
   if (keyEvent.key().isModifier()) {
     return;
@@ -60,6 +63,15 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
     break;
   case KEYCODE_ARROW_RIGHT: // FcitxKey_rightarrow:
     _key = Qt::Key_Right;
+    break;
+  case KEYCODE_PAGE_UP: // FcitxKey_pageup:
+    _key = Qt::Key_PageUp;
+    break;
+  case KEYCODE_PAGE_DOWN: // FcitxKey_pagedown:
+    _key = Qt::Key_PageDown;
+    break;
+  case KEYCODE_F4: // FcitxKey_f4:
+    _key = Qt::Key_F4;
     break;
   }
   Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
@@ -100,8 +112,8 @@ void Fcitx5EmojiEngine::keyEvent(const fcitx::InputMethodEntry& entry, fcitx::Ke
   }
 }
 
-void Fcitx5EmojiEngine::activate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
-  log_printf("[debug] Fcitx5EmojiEngine::activate\n");
+void Fcitx5ImEmojiPickerEngine::activate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
+  log_printf("[debug] Fcitx5ImEmojiPickerEngine::activate\n");
 
   emojiCommandQueue.push(std::make_shared<EmojiCommandEnable>([this, inputContext{event.inputContext()}](const std::string& text) {
     inputContext->commitString(text);
@@ -113,28 +125,28 @@ void Fcitx5EmojiEngine::activate(const fcitx::InputMethodEntry& entry, fcitx::In
   sendCursorLocation(event.inputContext());
 }
 
-void Fcitx5EmojiEngine::deactivate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
-  log_printf("[debug] Fcitx5EmojiEngine::deactivate\n");
+void Fcitx5ImEmojiPickerEngine::deactivate(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
+  log_printf("[debug] Fcitx5ImEmojiPickerEngine::deactivate\n");
 
   emojiCommandQueue.push(std::make_shared<EmojiCommandDisable>());
 }
 
-void Fcitx5EmojiEngine::reset(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
-  log_printf("[debug] Fcitx5EmojiEngine::reset\n");
+void Fcitx5ImEmojiPickerEngine::reset(const fcitx::InputMethodEntry& entry, fcitx::InputContextEvent& event) {
+  log_printf("[debug] Fcitx5ImEmojiPickerEngine::reset\n");
 
   emojiCommandQueue.push(std::make_shared<EmojiCommandReset>());
 }
 
-void Fcitx5EmojiEngine::sendCursorLocation(fcitx::InputContext* inputContext) {
+void Fcitx5ImEmojiPickerEngine::sendCursorLocation(fcitx::InputContext* inputContext) {
   const fcitx::Rect& r = inputContext->cursorRect();
 
-  log_printf("[debug] Fcitx5EmojiEngine::sendCursorLocation x:%d y:%d w:%d h:%d\n", r.left(), r.top(), r.width(), r.height());
+  log_printf("[debug] Fcitx5ImEmojiPickerEngine::sendCursorLocation x:%d y:%d w:%d h:%d\n", r.left(), r.top(), r.width(), r.height());
 
   emojiCommandQueue.push(std::make_shared<EmojiCommandSetCursorLocation>(new QRect(r.left(), r.top(), r.width(), r.height())));
 }
 
-fcitx::AddonInstance* Fcitx5EmojiEngineFactory::create(fcitx::AddonManager* manager) {
-  log_printf("[debug] Fcitx5EmojiEngineFactory::create\n");
+fcitx::AddonInstance* Fcitx5ImEmojiPickerEngineFactory::create(fcitx::AddonManager* manager) {
+  log_printf("[debug] Fcitx5ImEmojiPickerEngineFactory::create\n");
 
   std::thread{[]() {
     QProcess fcitx5remote;
@@ -154,9 +166,9 @@ fcitx::AddonInstance* Fcitx5EmojiEngineFactory::create(fcitx::AddonManager* mana
     std::thread{gui_main, 0, nullptr}.detach();
   }
 
-  return new Fcitx5EmojiEngine();
+  return new Fcitx5ImEmojiPickerEngine();
 }
 
-FCITX_ADDON_FACTORY(Fcitx5EmojiEngineFactory);
+FCITX_ADDON_FACTORY(Fcitx5ImEmojiPickerEngineFactory);
 
 #endif

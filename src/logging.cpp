@@ -1,5 +1,5 @@
 #include "logging.hpp"
-#include <cstdio>
+#include <stdio.h>
 #include <time.h>
 #include <stdarg.h>
 
@@ -8,7 +8,7 @@ void log_printf(const char* format, ...) {
 #ifndef NDEBUG
   static FILE* log_file = nullptr;
   if (!log_file) {
-    log_file = fopen("/tmp/dank-emoji-picker.log", "a");
+    log_file = fopen("/tmp/im-emoji-picker.log", "a");
   }
 
   fprintf(log_file, "(%ld) ", time(nullptr));

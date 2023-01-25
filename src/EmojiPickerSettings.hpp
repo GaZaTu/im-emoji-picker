@@ -6,13 +6,13 @@
 #include <vector>
 #include <QFontMetrics>
 
-class EmojiSettings : public QSettings {
+class EmojiPickerSettings : public QSettings {
   Q_OBJECT
 
 public:
   static void writeDefaultsToDisk();
 
-  explicit EmojiSettings();
+  explicit EmojiPickerSettings();
 
   bool skinTonesDisabled() const;
   void skinTonesDisabled(bool skinTonesDisabled);
@@ -55,16 +55,16 @@ public:
   void searchEditTextOffset(int searchEditTextOffset);
 
 private:
-  static EmojiSettings* _snapshot;
+  static EmojiPickerSettings* _snapshot;
 };
 
-class EmojiCache : public QSettings {
+class EmojiPickerCache : public QSettings {
   Q_OBJECT
 
 public:
-  explicit EmojiCache();
+  explicit EmojiPickerCache();
 
-  ~EmojiCache();
+  ~EmojiPickerCache();
 
   std::vector<Emoji> emojiMRU();
   void emojiMRU(const std::vector<Emoji>& emojiMRU);
