@@ -124,6 +124,7 @@ if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
 
     install(TARGETS ${PROJECT_NAME}-ibus RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/ibus)
     install(FILES ${PROJECT_SOURCE_DIR}/ibus-component.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ibus/component RENAME im-emoji-picker-ibus.xml)
+    install(CODE "execute_process(COMMAND ibus write-cache)")
 
     # TODO maybe:
     # add_custom_target(appimage

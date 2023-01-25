@@ -124,6 +124,8 @@ static gboolean ibus_im_emoji_picker_engine_process_key_event(IBusEngine* engine
   case IBUS_KEY_Control_R:
   case IBUS_KEY_Shift_L:
   case IBUS_KEY_Shift_R:
+  case IBUS_KEY_Super_L:
+  case IBUS_KEY_Super_R:
   case IBUS_KEY_Delete:
     return FALSE;
   }

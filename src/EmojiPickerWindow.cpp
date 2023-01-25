@@ -48,7 +48,7 @@ EmojiPickerWindow::EmojiPickerWindow() : QMainWindow() {
   setWindowOpacity(_settings.windowOpacity());
   setFocusPolicy(Qt::NoFocus);
   setAttribute(Qt::WA_ShowWithoutActivating);
-  setFixedSize(340, 200);
+  setFixedSize(340, 180 + (_settings.hideStatusBar() ? 0 : 20));
 
   for (const auto& emoji : emojis) {
     auto emojiLayoutWidget = new EmojiLabel(_emojiListWidget, _settings, emoji);
