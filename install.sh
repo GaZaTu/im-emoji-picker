@@ -105,6 +105,8 @@ wget -q --show-progress "$URL" -O "$ARTIFACT_PATH"
 
 if $ARTIFACT_IS_APPIMAGE
 then
+  echo "ARTIFACT_IS_APPIMAGE should be 0"
+
   # if command -v $EXECUTABLE_NAME > /dev/null;
   # then
   #   echo ""
