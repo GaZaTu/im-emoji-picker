@@ -147,10 +147,12 @@ size=2
 
 ### Known Issues 😅
 
+- On Debian with Gnome i had to reboot after installing to be able to configure the emoji picker input method
+
 - On Sway and probably i3 too (maybe any tiling WM) you might need to configure a window rule to prevent the emoji picker from stealing focus (which creates a flickering mess)
   - example: `no_focus [title="im-emoji-picker"]`
 
-- When using Wayland neither Fcitx5 nor IBus seem to report the correct text cursor location so the emoji picker will open either in the top left corner or in the center of the screen
+- When using Wayland both Fcitx5 and IBus might not report the correct text cursor location so the emoji picker can open either in the top left corner or in the center of the screen
 
 - If the emoji picker is ugly and doesn't follow your system theme (a bit like [this](https://api.gazatu.xyz/blog/entries/01GQCEZA5K1162PYXBRK11T76N/image.webp)) then take a look at [https://wiki.archlinux.org/title/Uniform_look_for_Qt_and_GTK_applications](https://wiki.archlinux.org/title/Uniform_look_for_Qt_and_GTK_applications).
 
