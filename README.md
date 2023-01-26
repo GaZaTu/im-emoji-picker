@@ -1,8 +1,10 @@
 # I'm Emoji Picker
 
 an emoji picker compatible with linux systems using either XServer or Wayland with either Fcitx5 or IBus.
-You could also say that the `im` in `im-emoji-picker` stands for `input method` 😉.
+You could also say that the **im** in `im-emoji-picker` stands for **input method** 😉.
 I'm basically using the same systems some people use to type Japanese or Chinese characters with a western keyboard.
+
+This project took heavy inspiration from the "predecessor" [https://github.com/GaZaTu/x11-emoji-picker](https://github.com/GaZaTu/x11-emoji-picker).
 
 ## Screenshots 😮
 
@@ -20,19 +22,47 @@ I'm basically using the same systems some people use to type Japanese or Chinese
 
 ## Motivation 🤔
 
-### Original Motivation ([x11-emoji-picker](https://github.com/GaZaTu/x11-emoji-picker))
+### Original Motivation ([x11-emoji-picker](https://github.com/GaZaTu/x11-emoji-picker#motivation-))
 
 I switched from Windows 10 to Linux at work and missed filling my emails with emojis. ~~(the KDE version we use doesn't have the builtin emoji picker yet)~~ (turns out that the KDE emoji picker only copies emojis to clipboard anyway so yea fuck that)
 
 ### Reason For The New Emoji Picker
 
-The issue with [x11-emoji-picker](https://github.com/GaZaTu/x11-emoji-picker) is `xdotool` as the success rate for it to work is a lottery. Sometimes the target window requires focus to accept input; Sometimes it doesn't support `XText` so you need to use some hacky clipboard workaround; And sometimes it doesn't work at all. All in all a frustrating experience.
+The issue with *x11-emoji-picker* is `xdotool` as the success rate for it to work is a lottery. Sometimes the target window requires focus to accept input; Sometimes it doesn't support `XText` so you need to use some hacky clipboard workaround; And sometimes it doesn't work at all. All in all a frustrating experience.
 
 Another issue is with the `x11...` in the old emoji picker. I won't switch to Wayland anytime soon but having support for it in my emoji picker would've been nice so more people can use it.
 
 ## Installation 😉
 
-*TODO*
+Download the [install.sh](install.sh) and run it. It downloads and installs either a `.deb` (**Ubuntu**, **Debian**) or a `.rpm` (**openSUSE**, **Fedora**).
+
+- Terminal: `wget -q https://raw.githubusercontent.com/GaZaTu/im-emoji-picker/master/install.sh && sh install.sh`
+- Specifying IMF: `sh install.sh -f fcitx5` or `sh install.sh -f ibus`
+- Installing nightly build: `sh install.sh -r tags/nightly-build`
+
+Otherwise look at the following options:
+
+**Debian**:
+Download a `-debian-*.deb` from [/releases](https://github.com/GaZaTu/im-emoji-picker/releases) and install it.
+
+- Terminal: `sudo apt install ./im-emoji-picker-*.deb`
+
+**Ubuntu**:
+Download a `-ubuntu-*.deb` from [/releases](https://github.com/GaZaTu/im-emoji-picker/releases) and install it.
+
+- Terminal: `sudo apt install ./im-emoji-picker-*.deb`
+
+**OpenSUSE**:
+Download a `-opensuse-*.rpm` from [/releases](https://github.com/GaZaTu/im-emoji-picker/releases) and install it.
+
+- Terminal: `sudo zypper install ./im-emoji-picker-*.rpm`
+
+**Fedora**:
+Download a `-fedora-*.rpm` from [/releases](https://github.com/GaZaTu/im-emoji-picker/releases) and install it.
+
+- Terminal: `sudo dnf install ./im-emoji-picker-*.rpm`
+
+*Note: There are [nightly releases](https://github.com/GaZaTu/im-emoji-picker/releases/tag/nightly-build) aswell which are rebuilt on every push to master*
 
 ## Setup 😅
 
@@ -97,9 +127,6 @@ gendersDisabled=false
 hideStatusBar=false
 ; `not -1` = Any emoji released after this number is hidden
 maxEmojiVersion=-1
-; Sometimes the search text and the completion preview don't align
-; so you can add or substract pixels with this setting
-searchEditTextOffset=0
 ; `true` = Only skin tone neutral emojis are visible (hands for example)
 skinTonesDisabled=false
 ; `true` = Use your system emoji font instead of the bundled Twemoji images to display emojis
@@ -120,10 +147,10 @@ size=2
 
 ### Known Issues 😅
 
-- On Sway and probably i3 too (maybe any tiling WM) you might need to configure a window rule to prevent the emoji picker from stealing focus
+- On Sway and probably i3 too (maybe any tiling WM) you might need to configure a window rule to prevent the emoji picker from stealing focus (which creates a flickering mess)
   - example: `no_focus [title="im-emoji-picker"]`
 
-- When using Wayland neither Fcitx5 nor IBus report the correct text cursor location so the emoji picker will open either in the top left corner or in the center of the screen
+- When using Wayland neither Fcitx5 nor IBus seem to report the correct text cursor location so the emoji picker will open either in the top left corner or in the center of the screen
 
 - If the emoji picker is ugly and doesn't follow your system theme (a bit like [this](https://api.gazatu.xyz/blog/entries/01GQCEZA5K1162PYXBRK11T76N/image.webp)) then take a look at [https://wiki.archlinux.org/title/Uniform_look_for_Qt_and_GTK_applications](https://wiki.archlinux.org/title/Uniform_look_for_Qt_and_GTK_applications).
 
@@ -139,6 +166,7 @@ size=2
 - `ctrl+a` = select all text in search input
 - `ctrl+c` = copy selected emoji
 - `ctrl+x` = cut selection in search (not really tbh)
+- `ctrl+backspace` = clear search
 - `up`, `down`, `left`, `right` = change selection
 - `shift+up`, `shift+down`, `pgup`, `pgdown` = change selection (faster)
 - `escape` = close emoji picker
@@ -185,7 +213,7 @@ size=2
 ## Special Thanks 🤗
 
 - boring_nick for testing this on his arch+sway setup during the initial development phase
-- [zneix](https://github.com/zneix) for his help on the original x11-emoji-picker
+- [zneix](https://github.com/zneix) and other contributors for their help on the original [x11-emoji-picker](https://github.com/GaZaTu/x11-emoji-picker)
 
 ## License 😈
 
