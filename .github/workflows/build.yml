@@ -76,10 +76,7 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCPACK_GENERATOR=${{env.CPACK_GENERATOR}} -DPACKAGE_VERSION=${{env.VERSION}} -DONLY_FCITX5=1 ..
           make -j$(nproc)
           make package
-          for f in *.{deb,rpm};
-          do
-            mv $f PACKAGE_FCITX5 2>/dev/null; true;
-          done
+          for f in *.{deb,rpm}; do mv $f PACKAGE_FCITX5 2>/dev/null; true; done
 
       - name: Package (IBus)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian') || startsWith(matrix.image, 'fedora') || startsWith(matrix.image, 'opensuse')
@@ -90,10 +87,7 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCPACK_GENERATOR=${{env.CPACK_GENERATOR}} -DPACKAGE_VERSION=${{env.VERSION}} -DONLY_IBUS=1 ..
           make -j$(nproc)
           make package
-          for f in *.{deb,rpm};
-          do
-            mv $f PACKAGE_IBUS 2>/dev/null; true;
-          done
+          for f in *.{deb,rpm}; do mv $f PACKAGE_IBUS 2>/dev/null; true; done
 
       # - name: Package .AppImage
       #   if: "startsWith(matrix.image, 'debian:10')"
