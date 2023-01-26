@@ -19,7 +19,7 @@ jobs:
       options: --privileged
     strategy:
       matrix:
-        image: ['ubuntu:22.04', 'debian:11', 'opensuse/leap:15.4', 'fedora:38']
+        image: ['ubuntu:22.04', 'debian:11']
         # image: ['ubuntu:23.04', 'ubuntu:22.10', 'ubuntu:22.04', 'ubuntu:20.04', 'debian:11', 'debian:10', 'opensuse/leap:15.4', 'opensuse/leap:15.3', 'opensuse/leap:15.2', 'opensuse/leap:15.1', 'fedora:38', 'fedora:37', 'fedora:36']
       fail-fast: false
 
@@ -36,7 +36,7 @@ jobs:
         if: startsWith(matrix.image, 'fedora')
         run: dnf clean expire-cache && dnf install -y tar gzip wget rpm-build git gcc-c++ cmake qt5-qtbase-devel libicu-devel fcitx5 fcitx5-devel ibus ibus-devel
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: git fetch --prune --unshallow --tags
         continue-on-error: true
 
@@ -114,7 +114,7 @@ jobs:
 
       - name: Upload Fcitx5 artifact .deb (ubuntu / debian)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian')
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-fcitx5.deb
           path: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-fcitx5.deb
@@ -122,7 +122,7 @@ jobs:
 
       - name: Upload Fcitx5 artifact .rpm (opensuse / fedora)
         if: startsWith(matrix.image, 'opensuse') || startsWith(matrix.image, 'fedora')
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-fcitx5.rpm
           path: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-fcitx5.rpm
@@ -130,7 +130,7 @@ jobs:
 
       - name: Upload IBus artifact .deb (ubuntu / debian)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian')
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.deb
           path: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.deb
@@ -138,7 +138,7 @@ jobs:
 
       - name: Upload IBus artifact .rpm (opensuse / fedora)
         if: startsWith(matrix.image, 'opensuse') || startsWith(matrix.image, 'fedora')
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.rpm
           path: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.rpm
@@ -166,6 +166,7 @@ jobs:
           artifacts: "${{steps.download_artifacts.outputs.download-path}}/**/*"
           body: ${{github.event.head_commit.message}}
           prerelease: true
+          makeLatest: false
           name: Nightly Release
           tag: nightly-build
 
@@ -175,29 +176,22 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
 
     steps:
-      - name: Create release
-        id: create_release
-        uses: pajlada/create-release@v2.0.3
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        with:
-          tag_name: ${{github.ref}}
-          release_name: ${{github.ref}}
-          body: |
-            ------
-
       - name: Download artifacts
         id: download_artifacts
         uses: actions/download-artifact@v2
         with:
           path: artifacts
 
-      - name: Display downloaded artifacts
-        run: ls -R ${{steps.download_artifacts.outputs.download-path}}
-
-      - name: Upload release assets
-        uses: GaZaTu/release-asset-action@v3
+      - name: Create nightly
+        id: create_release
+        uses: ncipollo/release-action@v1.12.0
         with:
-          pattern: "${{steps.download_artifacts.outputs.download-path}}/**/*"
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          release-url: ${{steps.create_release.outputs.upload_url}}
+          removeArtifacts: false
+          allowUpdates: false
+          artifactErrorsFailBuild: true
+          artifacts: "${{steps.download_artifacts.outputs.download-path}}/**/*"
+          generateReleaseNotes: true
+          prerelease: false
+          makeLatest: true
+          name: ${{github.ref}}
+          tag: ${{github.ref}}
