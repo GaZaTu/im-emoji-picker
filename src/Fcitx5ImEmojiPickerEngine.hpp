@@ -5,7 +5,7 @@
 #include <fcitx/addonfactory.h>
 #include <fcitx/inputmethodengine.h>
 
-class Fcitx5ImEmojiPickerEngine : public fcitx::InputMethodEngineV2 {
+class Fcitx5ImEmojiPickerEngine : public fcitx::InputMethodEngine {
 public:
   void keyEvent(const fcitx::InputMethodEntry& entry, fcitx::KeyEvent& keyEvent) override;
 
