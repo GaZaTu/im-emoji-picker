@@ -5,23 +5,15 @@
 #include "logging.hpp"
 #include <QApplication>
 #include <QClipboard>
-#include <QCoreApplication>
 #include <QDesktopServices>
 #include <QDesktopWidget>
 #include <QKeyEvent>
-#include <QLabel>
-#include <QLineEdit>
 #include <QScreen>
-#include <QStatusBar>
 #include <QStyle>
 #include <QTimer>
 #include <algorithm>
 #include <exception>
 #include <memory>
-#include <qlineedit.h>
-#include <qnamespace.h>
-#include <qscrollarea.h>
-#include <qwindowdefs.h>
 #include <vector>
 
 Emoji convertKaomojiToEmoji(const Kaomoji& kaomoji) {
@@ -69,10 +61,10 @@ EmojiPickerWindow::EmojiPickerWindow() : QMainWindow() {
   _searchContainerWidget->setLayout(_searchContainerLayout);
   _searchContainerLayout->setStackingMode(QStackedLayout::StackAll);
 
-  _searchCompletion->setIndent(_searchEdit->fontMetrics().averageCharWidth());
+  _searchCompletion->setStyleSheet(_searchCompletion->styleSheet() + QString("background: #00000000;"));
   QColor _searchCompletionTextColor = _searchEdit->palette().text().color();
   _searchCompletionTextColor.setAlphaF(0.6);
-  _searchCompletion->setStyleSheet(QString("color: #%1;").arg(_searchCompletionTextColor.rgba(), 0, 16));
+  _searchCompletion->setStyleSheet(_searchCompletion->styleSheet() + QString("color: #%1;").arg(_searchCompletionTextColor.rgba(), 0, 16));
 
   _searchContainerLayout->addWidget(_searchCompletion);
   _searchContainerLayout->addWidget(_searchEdit);
@@ -220,22 +212,14 @@ void EmojiPickerWindow::updateSearchCompletion() {
     }
   }
 
-  int indexOfText = std::max(completion.indexOf(search, 0, Qt::CaseInsensitive), 0);
+  int indexOfSearch = std::max(completion.indexOf(search, 0, Qt::CaseInsensitive), 0);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-  int textWidth = _searchEdit->fontMetrics().horizontalAdvance(completion.left(indexOfText));
+  int offsetOfSearch = _searchEdit->fontMetrics().horizontalAdvance(completion.left(indexOfSearch));
 #else
-  int textWidth = _searchEdit->fontMetrics().width(completion.left(indexOfText));
+  int offsetOfSearch = _searchEdit->fontMetrics().width(completion.left(indexOfSearch));
 #endif
 
-  completion.replace(indexOfText, search.length(), search);
-  if (completion.length() > 42) {
-    completion = completion.left(42) + "...";
-  }
-
-  // TODO: investigate
-  // i don't understand why _searchEditTextOffset is needed even
-  // but on some systems the required left margin is different by like +1 or -1 pixel
-  _searchEdit->setTextMargins(textWidth + _settings.searchEditTextOffset(), 0, 0, 0);
+  _searchEdit->setTextMargins(offsetOfSearch, 0, 0, 0);
 
   _searchCompletion->setText(completion);
 }
@@ -419,7 +403,6 @@ void EmojiPickerWindow::setCursorLocation(const QRect* rect) {
 }
 
 EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event) {
-  // TODO: ctrl+backspace = delete word
   // TODO: ctrl+w = delete word
   // TODO: ctrl+d = select word
   // TODO: key values instead of key codes
@@ -455,6 +438,10 @@ EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event) {
 
     if (event->key() == Qt::Key_Down) {
       return EmojiAction::PAGE_DOWN;
+    }
+
+    if (event->key() == Qt::Key_Backspace) {
+      return EmojiAction::CLEAR_SEARCH;
     }
 
     return EmojiAction::INVALID;
@@ -605,6 +592,11 @@ void EmojiPickerWindow::processKeyEvent(const QKeyEvent* event) {
       _searchEdit->setText("");
     }
     // ctrl+a -> ctrl+x = empty text field
+    updateEmojiList();
+    break;
+
+  case EmojiAction::CLEAR_SEARCH:
+    _searchEdit->setText("");
     updateEmojiList();
     break;
 

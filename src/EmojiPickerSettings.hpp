@@ -1,10 +1,10 @@
 #pragma once
 
 #include "emojis.hpp"
+#include <QFontMetrics>
 #include <QSettings>
 #include <utility>
 #include <vector>
-#include <QFontMetrics>
 
 class EmojiPickerSettings : public QSettings {
   Q_OBJECT
@@ -50,12 +50,6 @@ public:
 
   bool useSystemEmojiFontWidthHeuristics() const;
   void useSystemEmojiFontWidthHeuristics(bool useSystemEmojiFontWidthHeuristics);
-
-  int searchEditTextOffset() const;
-  void searchEditTextOffset(int searchEditTextOffset);
-
-private:
-  static EmojiPickerSettings* _snapshot;
 };
 
 class EmojiPickerCache : public QSettings {

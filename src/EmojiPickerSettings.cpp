@@ -48,7 +48,6 @@ void EmojiPickerSettings::writeDefaultsToDisk() {
   s.hideStatusBar(s.hideStatusBar());
   s.useSystemEmojiFont(s.useSystemEmojiFont());
   s.useSystemEmojiFontWidthHeuristics(s.useSystemEmojiFontWidthHeuristics());
-  s.searchEditTextOffset(s.searchEditTextOffset());
 }
 
 EmojiPickerSettings::EmojiPickerSettings() : QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName(), nullptr) {
@@ -192,14 +191,6 @@ bool EmojiPickerSettings::useSystemEmojiFontWidthHeuristics() const {
 
 void EmojiPickerSettings::useSystemEmojiFontWidthHeuristics(bool useSystemEmojiFontWidthHeuristics) {
   setValue("useSystemEmojiFontWidthHeuristics", useSystemEmojiFontWidthHeuristics);
-}
-
-int EmojiPickerSettings::searchEditTextOffset() const {
-  return value("searchEditTextOffset", 0).toInt();
-}
-
-void EmojiPickerSettings::searchEditTextOffset(int searchEditTextOffset) {
-  setValue("searchEditTextOffset", searchEditTextOffset);
 }
 
 EmojiPickerCache::EmojiPickerCache() : QSettings(path(), QSettings::IniFormat) {

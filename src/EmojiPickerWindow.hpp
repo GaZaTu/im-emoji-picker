@@ -4,18 +4,16 @@
 #include "EmojiPickerSettings.hpp"
 #include "ThreadsafeQueue.hpp"
 #include <QGridLayout>
+#include <QKeyEvent>
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QScrollArea>
 #include <QStackedLayout>
+#include <QStatusBar>
 #include <QVBoxLayout>
 #include <QWidget>
 #include <functional>
 #include <memory>
-#include <qevent.h>
-#include <qlayoutitem.h>
-#include <qstatusbar.h>
-#include <qwidget.h>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -81,6 +79,7 @@ enum class EmojiAction {
   PAGE_DOWN,
   OPEN_SETTINGS,
   CUT_SELECTION_IN_SEARCH,
+  CLEAR_SEARCH,
   REMOVE_CHAR_IN_SEARCH,
   INSERT_CHAR_IN_SEARCH,
 };
@@ -119,7 +118,7 @@ private:
   QWidget* _searchContainerWidget = new QWidget(_centralWidget);
   QStackedLayout* _searchContainerLayout = new QStackedLayout(_searchContainerWidget);
   QLineEdit* _searchEdit = new QLineEdit(_searchContainerWidget);
-  QLabel* _searchCompletion = new QLabel(_searchEdit);
+  QLineEdit* _searchCompletion = new QLineEdit(_searchContainerWidget);
 
   QScrollArea* _emojiListScroll = new QScrollArea(_centralWidget);
   QWidget* _emojiListWidget = new QWidget(_emojiListScroll);
