@@ -150,33 +150,24 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
 
     steps:
-      - name: Create nightly
-        id: create_release
-        uses: pajlada/create-release@v2.0.3
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        with:
-          tag_name: nightly-build
-          release_name: Nightly Release
-          body: |
-            Nightly Build
-          prerelease: true
-
       - name: Download artifacts
         id: download_artifacts
         uses: actions/download-artifact@v2
         with:
           path: artifacts
 
-      - name: Display downloaded artifacts
-        run: ls -R ${{steps.download_artifacts.outputs.download-path}}
-
-      - name: Upload release assets
-        uses: GaZaTu/release-asset-action@v3
+      - name: Create nightly
+        id: create_release
+        uses: ncipollo/release-action@v1.12.0
         with:
-          pattern: "${{steps.download_artifacts.outputs.download-path}}/**/*"
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          release-url: ${{steps.create_release.outputs.upload_url}}
+          removeArtifacts: true
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: "${{steps.download_artifacts.outputs.download-path}}/**/*"
+          body: ${{github.event.head_commit.message}}
+          prerelease: true
+          name: Nightly Release
+          tag: nightly-build
 
   create-release:
     needs: build-artifact
