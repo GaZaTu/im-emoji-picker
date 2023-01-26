@@ -79,7 +79,6 @@ jobs:
 
       - name: Package (Fcitx5)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian') || startsWith(matrix.image, 'fedora')
-        shell: bash
         run: |
           mkdir -p build
           cd build
@@ -91,7 +90,6 @@ jobs:
 
       - name: Package (IBus)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian') || startsWith(matrix.image, 'fedora') || startsWith(matrix.image, 'opensuse')
-        shell: bash
         run: |
           mkdir -p build
           cd build
