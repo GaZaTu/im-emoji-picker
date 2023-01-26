@@ -100,6 +100,7 @@ if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
     include_directories(/usr/include/glib-2.0)
     include_directories(/usr/lib/glib-2.0/include)
     include_directories(/usr/lib64/glib-2.0/include)
+    include_directories(/usr/lib/x86_64-linux-gnu/glib-2.0/include)
 
     set(SRC_FILES_IBUS
       ${SRC_FILES_COMMON}
