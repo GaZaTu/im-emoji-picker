@@ -163,7 +163,7 @@ jobs:
           removeArtifacts: true
           allowUpdates: true
           artifactErrorsFailBuild: true
-          artifacts: "${{steps.download_artifacts.outputs.download-path}}/**/*"
+          artifacts: "${{steps.download_artifacts.outputs.download-path}}/*/*"
           body: ${{github.event.head_commit.message}}
           prerelease: true
           makeLatest: false
@@ -189,7 +189,7 @@ jobs:
           removeArtifacts: false
           allowUpdates: false
           artifactErrorsFailBuild: true
-          artifacts: "${{steps.download_artifacts.outputs.download-path}}/**/*"
+          artifacts: "${{steps.download_artifacts.outputs.download-path}}/*/*"
           generateReleaseNotes: true
           prerelease: false
           makeLatest: true
