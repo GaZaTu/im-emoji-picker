@@ -36,6 +36,8 @@ jobs:
         run: dnf clean expire-cache && dnf install -y tar gzip wget rpm-build git gcc-c++ cmake qt5-qtbase-devel libicu-devel glib-devel fcitx5 fcitx5-devel ibus ibus-devel
 
       - uses: actions/checkout@v3
+      - run: git config --global --add safe.directory $(realpath .)
+        continue-on-error: true
       - run: git fetch --prune --unshallow --tags --force
         continue-on-error: true
 
