@@ -152,7 +152,7 @@ jobs:
     steps:
       - name: Download artifacts
         id: download_artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
 
@@ -178,7 +178,7 @@ jobs:
     steps:
       - name: Download artifacts
         id: download_artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
 
