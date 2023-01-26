@@ -124,6 +124,8 @@ if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
 
     install(TARGETS ${PROJECT_NAME}-ibus RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/ibus)
     install(FILES ${PROJECT_SOURCE_DIR}/ibus-component.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ibus/component RENAME im-emoji-picker-ibus.xml)
+    install(FILES ${PROJECT_SOURCE_DIR}/src/res/im-emoji-picker_32x32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps RENAME im-emoji-picker.png)
+    install(CODE "execute_process(COMMAND touch /usr/share/icons/hicolor)")
     install(CODE "execute_process(COMMAND ibus write-cache)")
 
     # TODO maybe:
@@ -167,6 +169,8 @@ if (NOT ("${SKIP_FCITX5}" STREQUAL "1"))
     install(TARGETS ${PROJECT_NAME}-fcitx5 RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/fcitx5/bin)
     install(FILES ${PROJECT_SOURCE_DIR}/fcitx5-addon.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/addon RENAME fcitx5imemojipicker.conf)
     install(FILES ${PROJECT_SOURCE_DIR}/fcitx5-inputmethod.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/inputmethod RENAME fcitx5imemojipicker.conf)
+    install(FILES ${PROJECT_SOURCE_DIR}/src/res/im-emoji-picker_32x32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps RENAME im-emoji-picker.png)
+    install(CODE "execute_process(COMMAND touch /usr/share/icons/hicolor)")
   endif ()
 endif ()
 

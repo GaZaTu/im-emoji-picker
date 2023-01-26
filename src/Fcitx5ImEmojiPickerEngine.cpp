@@ -4,16 +4,14 @@
 #include "EmojiPickerWindow.hpp"
 #include "fcitx/inputmethodentry.h"
 #include "logging.hpp"
+#include <QKeyEvent>
 #include <QProcess>
 #include <fcitx-utils/key.h>
 #include <fcitx-utils/keysym.h>
 #include <fcitx-utils/keysymgen.h>
 #include <fcitx/event.h>
 #include <fcitx/inputcontext.h>
-#include <qevent.h>
-#include <qnamespace.h>
 #include <thread>
-#include <unistd.h>
 
 #define KEYCODE_ESCAPE 9
 #define KEYCODE_RETURN 36

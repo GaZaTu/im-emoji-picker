@@ -3,9 +3,9 @@
 #include "IBusImEmojiPickerEngine.hpp"
 #include "EmojiPickerWindow.hpp"
 #include "logging.hpp"
+#include <QKeyEvent>
 #include <cctype>
 #include <memory>
-#include <qnamespace.h>
 #include <string>
 
 extern "C" {

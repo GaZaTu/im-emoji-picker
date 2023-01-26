@@ -33,7 +33,7 @@ private:
   bool _hasRealEmoji = false;
   double _devicePixelRatio;
 
-  QGraphicsDropShadowEffect* _shadowEffect = new QGraphicsDropShadowEffect();
+  QGraphicsDropShadowEffect* _shadowEffect = new QGraphicsDropShadowEffect(this);
 
   const EmojiPickerSettings& _settings;
 };
