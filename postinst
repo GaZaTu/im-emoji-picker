@@ -1,0 +1,8 @@
+#!/bin/sh
+
+touch /usr/share/icons/hicolor
+
+if command -v ibus > /dev/null;
+then
+  ibus write-cache
+fi

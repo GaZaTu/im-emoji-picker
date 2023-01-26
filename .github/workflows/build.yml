@@ -73,6 +73,7 @@ jobs:
       - name: Package (Fcitx5)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian') || startsWith(matrix.image, 'fedora')
         run: |
+          rm -rf build
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCPACK_GENERATOR=${{env.CPACK_GENERATOR}} -DPACKAGE_VERSION=${{env.VERSION}} -DONLY_FCITX5=1 ..
@@ -94,6 +95,7 @@ jobs:
       - name: Package (IBus)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian') || startsWith(matrix.image, 'fedora') || startsWith(matrix.image, 'opensuse')
         run: |
+          rm -rf build
           mkdir -p build
           cd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCPACK_GENERATOR=${{env.CPACK_GENERATOR}} -DPACKAGE_VERSION=${{env.VERSION}} -DONLY_IBUS=1 ..

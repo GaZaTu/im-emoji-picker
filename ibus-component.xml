@@ -6,7 +6,7 @@
   <license>MIT</license>
   <author>GaZaTu &lt;gazatu@protonmail.com&gt;</author>
   <homepage>https://github.com/GaZaTu/im-emoji-picker</homepage>
-  <exec>/usr/lib/ibus/im-emoji-picker-ibus</exec>
+  <exec>/usr/lib/ibus/ibusimemojipicker</exec>
   <textdomain>im-emoji-picker</textdomain>
   <engines>
     <engine>
