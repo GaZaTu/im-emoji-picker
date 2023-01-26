@@ -29,11 +29,11 @@ fi
 
 if [ -z "$FRAMEWORK" ];
 then
-  echo "no input method framework found/specified (example: `sh install.sh -f fcitx5`)"
+  echo "no input method framework found/specified (example: \"sh install.sh -f fcitx5\")"
   exit 1
 fi
 
-echo "Installing `$PROJECT_NAME` release: `$RELEASE`..."
+echo "Installing \"$PROJECT_NAME\" release: \"$RELEASE\"..."
 
 DISTRO_ID=$(grep "^ID=" "/etc/os-release" | sed "s/ID=//" | sed "s/\"//g")
 DISTRO_VERSION_ID=$(grep "^VERSION_ID=" "/etc/os-release" | sed "s/VERSION_ID=//" | sed "s/\"//g")
@@ -138,4 +138,4 @@ else
 fi
 
 echo ""
-echo "`$PROJECT_NAME` installed! 🎉"
+echo "\"$PROJECT_NAME\" installed! 🎉"
