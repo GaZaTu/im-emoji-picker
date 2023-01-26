@@ -23,7 +23,6 @@ jobs:
         # image: ['ubuntu:23.04', 'ubuntu:22.10', 'ubuntu:22.04', 'ubuntu:20.04', 'debian:11', 'debian:10', 'opensuse/leap:15.4', 'opensuse/leap:15.3', 'opensuse/leap:15.2', 'opensuse/leap:15.1', 'fedora:38', 'fedora:37', 'fedora:36']
       fail-fast: false
 
-    shell: bash
     steps:
       - name: Install dependencies (ubuntu & debian)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian')
@@ -70,6 +69,7 @@ jobs:
 
       - name: Package (Fcitx5)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian') || startsWith(matrix.image, 'fedora')
+        shell: bash
         run: |
           mkdir -p build
           cd build
@@ -80,6 +80,7 @@ jobs:
 
       - name: Package (IBus)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian') || startsWith(matrix.image, 'fedora') || startsWith(matrix.image, 'opensuse')
+        shell: bash
         run: |
           mkdir -p build
           cd build
