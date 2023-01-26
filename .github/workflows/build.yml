@@ -23,6 +23,7 @@ jobs:
         # image: ['ubuntu:23.04', 'ubuntu:22.10', 'ubuntu:22.04', 'ubuntu:20.04', 'debian:11', 'debian:10', 'opensuse/leap:15.4', 'opensuse/leap:15.3', 'opensuse/leap:15.2', 'opensuse/leap:15.1', 'fedora:38', 'fedora:37', 'fedora:36']
       fail-fast: false
 
+    shell: bash
     steps:
       - name: Install dependencies (ubuntu & debian)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian')
@@ -116,7 +117,7 @@ jobs:
           mv build/PACKAGE_IBUS build/${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.rpm 2>/dev/null; true
 
       # - name: Rename artifact .AppImage
-      #   if: "startsWith(matrix.image, 'debian:9')"
+      #   if: "startsWith(matrix.image, 'debian:10')"
       #   run: |
       #     mv build/x11-emoji-picker-dev-x86_64.AppImage build/${{env.ARTIFACT_NAME}}.AppImage
 
@@ -153,7 +154,7 @@ jobs:
           if-no-files-found: ignore
 
       # - name: Upload artifact .AppImage
-      #   if: startsWith(matrix.image, 'debian:9')
+      #   if: startsWith(matrix.image, 'debian:10')
       #   uses: actions/upload-artifact@v2
       #   with:
       #     name: ${{env.ARTIFACT_NAME}}.AppImage
