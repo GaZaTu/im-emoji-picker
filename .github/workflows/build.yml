@@ -29,7 +29,7 @@ jobs:
 
       - name: Install dependencies (opensuse)
         if: startsWith(matrix.image, 'opensuse')
-        run: zypper refresh && zypper install -y tar gzip wget rpm-build git gcc-c++ cmake libqt5-qtbase-devel libicu-devel glib-devel ibus ibus-devel
+        run: zypper refresh && zypper install -y tar gzip wget rpm-build git gcc-c++ cmake libqt5-qtbase-devel libicu-devel glibc-devel ibus ibus-devel
 
       - name: Install dependencies (fedora)
         if: startsWith(matrix.image, 'fedora')
