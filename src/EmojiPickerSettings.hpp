@@ -31,7 +31,7 @@ public:
   std::vector<std::string> emojiAliasFiles();
   void emojiAliasFiles(const std::vector<std::string>& emojiAliasFiles);
 
-  std::unordered_map<std::string, std::vector<std::string>> emojiAliases();
+  std::unordered_map<std::string, std::vector<QString>> emojiAliases();
 
   // std::string customQssFilePath() const;
   // void customQssFilePath(const std::string& customQssFilePath);

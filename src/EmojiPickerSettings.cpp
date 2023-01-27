@@ -122,8 +122,8 @@ void EmojiPickerSettings::emojiAliasFiles(const std::vector<std::string>& emojiA
   });
 }
 
-std::unordered_map<std::string, std::vector<std::string>> EmojiPickerSettings::emojiAliases() {
-  std::unordered_map<std::string, std::vector<std::string>> result;
+std::unordered_map<std::string, std::vector<QString>> EmojiPickerSettings::emojiAliases() {
+  std::unordered_map<std::string, std::vector<QString>> result;
 
   for (const std::string& path : emojiAliasFiles()) {
     QSettings emojiAliasesIni{QString::fromStdString(path), QSettings::IniFormat};
@@ -132,8 +132,8 @@ std::unordered_map<std::string, std::vector<std::string>> EmojiPickerSettings::e
     for (int i = 0; i < arraySize; i++) {
       emojiAliasesIni.setArrayIndex(i);
 
-      std::string alias = emojiAliasesIni.value("alias").toString().toStdString();
-      std::string value = emojiAliasesIni.value("value").toString().toStdString();
+      auto alias = emojiAliasesIni.value("alias").toString();
+      auto value = emojiAliasesIni.value("value").toString().toStdString();
 
       result[value].push_back(alias);
     }

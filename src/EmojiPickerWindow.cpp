@@ -195,16 +195,20 @@ bool stringIncludes(const std::string& text, const std::string& search) {
   }
 }
 
-bool EmojiPickerWindow::emojiMatchesSearch(const Emoji& emoji, const std::string& search, std::string& found) {
-  const std::string& emojiName = emoji.name;
+bool EmojiPickerWindow::emojiMatchesSearch(const Emoji& emoji, const QString& search, bool mustStartWith, QString& found) {
+  if (!mustStartWith) {
+    mustStartWith = search.length() < 3;
+  }
 
-  if (stringIncludes(emojiName, search)) {
+  QString emojiName = tr(emoji.name.data());
+
+  if ((mustStartWith && emojiName.startsWith(search, Qt::CaseInsensitive)) || (!mustStartWith && emojiName.contains(search, Qt::CaseInsensitive))) {
     found = emojiName;
     return true;
   }
 
-  for (const std::string& alias : _emojiAliases[emoji.code]) {
-    if (stringIncludes(alias, search)) {
+  for (const QString& alias : _emojiAliases[emoji.code]) {
+    if ((mustStartWith && alias.startsWith(search, Qt::CaseInsensitive)) || (!mustStartWith && alias.contains(search, Qt::CaseInsensitive))) {
       found = alias;
       return true;
     }
@@ -213,10 +217,10 @@ bool EmojiPickerWindow::emojiMatchesSearch(const Emoji& emoji, const std::string
   return false;
 }
 
-bool EmojiPickerWindow::emojiMatchesSearch(const Emoji& emoji, const std::string& search) {
-  std::string found;
+bool EmojiPickerWindow::emojiMatchesSearch(const Emoji& emoji, const QString& search, bool mustStartWith) {
+  QString found;
 
-  return emojiMatchesSearch(emoji, search, found);
+  return emojiMatchesSearch(emoji, search, mustStartWith, found);
 }
 
 void EmojiPickerWindow::updateSearchCompletion() {
@@ -226,10 +230,7 @@ void EmojiPickerWindow::updateSearchCompletion() {
   if (selectedEmojiLabel()) {
     const Emoji& emoji = selectedEmojiLabel()->emoji();
 
-    std::string found;
-    if (emojiMatchesSearch(emoji, search.toStdString(), found)) {
-      completion = QString::fromStdString(found);
-    }
+    emojiMatchesSearch(emoji, search, false, completion);
   }
 
   int indexOfSearch = std::max(completion.indexOf(search, 0, Qt::CaseInsensitive), 0);
@@ -306,7 +307,8 @@ void EmojiPickerWindow::updateEmojiList() {
     label->hide();
   }
 
-  std::string search = _searchEdit->text().toStdString();
+  QString search = _searchEdit->text();
+  std::string searchAsStdString = search.toStdString();
 
   switch (_mode) {
   case ViewMode::MRU: {
@@ -328,12 +330,43 @@ void EmojiPickerWindow::updateEmojiList() {
   case ViewMode::LIST: {
     int row = 0;
     int column = 0;
+    std::unordered_set<std::string> addedEmojis;
+    if (search != "") {
+      for (const auto& emoji : emojis) {
+        if (_disabledEmojis.count(emoji.code) != 0) {
+          continue;
+        }
+
+        if (search != "" && !emojiMatchesSearch(emoji, search, true)) {
+          continue;
+        }
+
+        auto emojiLayoutItem = getEmojiLayoutItem(emoji);
+        auto label = static_cast<EmojiLabel*>(emojiLayoutItem->widget());
+
+        if (row <= 5) {
+          label->show();
+        }
+
+        addItemToEmojiList(&*emojiLayoutItem, label, row, column);
+
+        addedEmojis.emplace(emoji.code);
+
+        if (search != "" && row >= 5) {
+          break;
+        }
+      }
+    }
     for (const auto& emoji : emojis) {
+      if (addedEmojis.count(emoji.code) != 0) {
+        continue;
+      }
+
       if (_disabledEmojis.count(emoji.code) != 0) {
         continue;
       }
 
-      if (search != "" && !emojiMatchesSearch(emoji, search)) {
+      if (search != "" && !emojiMatchesSearch(emoji, search, false)) {
         continue;
       }
 
@@ -361,7 +394,7 @@ void EmojiPickerWindow::updateEmojiList() {
         continue;
       }
 
-      if (search != "" && !stringIncludes(kaomoji.name, search)) {
+      if (search != "" && !stringIncludes(kaomoji.name, searchAsStdString)) {
         continue;
       }
 

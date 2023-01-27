@@ -144,12 +144,12 @@ private:
   void updateSearchCompletion();
   void updateEmojiList();
 
-  bool emojiMatchesSearch(const Emoji& emoji, const std::string& search, std::string& found);
-  bool emojiMatchesSearch(const Emoji& emoji, const std::string& search);
+  bool emojiMatchesSearch(const Emoji& emoji, const QString& search, bool mustStartWith, QString& found);
+  bool emojiMatchesSearch(const Emoji& emoji, const QString& search, bool mustStartWith);
 
   std::unordered_set<std::string> _disabledEmojis;
 
-  std::unordered_map<std::string, std::vector<std::string>> _emojiAliases;
+  std::unordered_map<std::string, std::vector<QString>> _emojiAliases;
 
   std::vector<Emoji> _emojiMRU;
 
