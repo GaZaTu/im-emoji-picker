@@ -7,10 +7,16 @@
 #include <unicode/unistr.h>
 
 EmojiLabel::EmojiLabel(QWidget* parent, const EmojiPickerSettings& settings) : QLabel(parent), _settings(settings) {
+  setProperty("class", "EmojiLabel");
   setGraphicsEffect(_shadowEffect);
   setMouseTracking(true);
 
-  _shadowEffect->setColor(palette().text().color());
+  if (_settings.useSystemQtTheme()) {
+    _shadowEffect->setColor(palette().text().color());
+  } else {
+    _shadowEffect->setColor(QColor(240, 240, 240));
+  }
+
   _shadowEffect->setOffset(0);
   _shadowEffect->setBlurRadius(20);
   _shadowEffect->setEnabled(false);

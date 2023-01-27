@@ -20,8 +20,8 @@ public:
   bool gendersDisabled() const;
   void gendersDisabled(bool gendersDisabled);
 
-  // bool useSystemQtTheme() const;
-  // void useSystemQtTheme(bool useSystemQtTheme);
+  bool useSystemQtTheme() const;
+  void useSystemQtTheme(bool useSystemQtTheme);
 
   int maxEmojiVersion() const;
   void maxEmojiVersion(int maxEmojiVersion);
@@ -41,9 +41,6 @@ public:
 
   bool closeAfterFirstInput() const;
   void closeAfterFirstInput(bool closeAfterFirstInput);
-
-  bool hideStatusBar() const;
-  void hideStatusBar(bool hideStatusBar);
 
   bool useSystemEmojiFont() const;
   void useSystemEmojiFont(bool useSystemEmojiFont);

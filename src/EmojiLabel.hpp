@@ -1,10 +1,10 @@
 #pragma once
 
-#include "EmojiPickerSettings.hpp"
 #include "emojis.hpp"
 #include <QGraphicsDropShadowEffect>
 #include <QLabel>
 #include <QPixmap>
+#include "EmojiPickerSettings.hpp"
 
 class EmojiLabel : public QLabel {
   Q_OBJECT

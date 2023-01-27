@@ -274,7 +274,6 @@ const Kaomoji kaomojis[] = {
   {"on_the_phone", u8"(〃＾∇＾)】"},
   {"disgruntled", u8"( ͡° ʖ̯ ͡°)"},
   {"clown", u8"⫷ °⧭° ⫸"},
-  {"bunny", u8"(=^_^=)"},
   {"psycho", u8"ヘ（。□°）ヘ"},
   {"arm_wrestle", u8"( `_)乂(_' )"},
   {"groggy", u8"(-_ゞ"},

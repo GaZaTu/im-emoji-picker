@@ -123,8 +123,6 @@ Execute `ibus-setup` to open the IBus settings so you can add *I'm Emoji Picker*
 closeAfterFirstInput=false
 ; `true` = Only gender neutral emojis are visible (people and jobs for example)
 gendersDisabled=false
-; `true` = Hide the bottom row which shows the active view (MRU, List, Kaomoji)
-hideStatusBar=false
 ; `not -1` = Any emoji released after this number is hidden
 maxEmojiVersion=-1
 ; `true` = Only skin tone neutral emojis are visible (hands for example)
@@ -134,6 +132,8 @@ useSystemEmojiFont=false
 ; `true` = Automatically try to scale or hide emojis based on their system emoji font support
 ; (May lead to false positives)
 useSystemEmojiFontWidthHeuristics=true
+; `true` = Use the system Qt theme instead of the builtin dark fusion theme
+useSystemQtTheme=false
 ; `0` = Invisible emoji picker window
 windowOpacity=0.9
 
@@ -141,8 +141,7 @@ windowOpacity=0.9
 ; Refer to src/res/aliases/github-emojis.ini for an example
 [emojiAliasFiles]
 1\path=:/res/aliases/github-emojis.ini
-2\path=:/res/aliases/gitmoji-emojis.ini
-size=2
+size=1
 ```
 
 ### Known Issues 😅

@@ -39,13 +39,12 @@ void EmojiPickerSettings::writeDefaultsToDisk() {
 
   s.skinTonesDisabled(s.skinTonesDisabled());
   s.gendersDisabled(s.gendersDisabled());
-  // s.useSystemQtTheme(s.useSystemQtTheme());
+  s.useSystemQtTheme(s.useSystemQtTheme());
   s.maxEmojiVersion(s.maxEmojiVersion());
   s.emojiAliasFiles(s.emojiAliasFiles());
   // s.customQssFilePath(s.customQssFilePath());
   s.windowOpacity(s.windowOpacity());
   s.closeAfterFirstInput(s.closeAfterFirstInput());
-  s.hideStatusBar(s.hideStatusBar());
   s.useSystemEmojiFont(s.useSystemEmojiFont());
   s.useSystemEmojiFontWidthHeuristics(s.useSystemEmojiFontWidthHeuristics());
 }
@@ -69,13 +68,13 @@ void EmojiPickerSettings::gendersDisabled(bool gendersDisabled) {
   setValue("gendersDisabled", gendersDisabled);
 }
 
-// bool EmojiSettings::useSystemQtTheme() const {
-//   return value("useSystemQtTheme", false).toBool();
-// }
+bool EmojiPickerSettings::useSystemQtTheme() const {
+  return value("useSystemQtTheme", false).toBool();
+}
 
-// void EmojiSettings::useSystemQtTheme(bool useSystemQtTheme) {
-//   setValue("useSystemQtTheme", useSystemQtTheme);
-// }
+void EmojiPickerSettings::useSystemQtTheme(bool useSystemQtTheme) {
+  setValue("useSystemQtTheme", useSystemQtTheme);
+}
 
 int EmojiPickerSettings::maxEmojiVersion() const {
   return value("maxEmojiVersion", -1).toInt();
@@ -109,7 +108,6 @@ bool EmojiPickerSettings::isDisabledEmoji(const Emoji& emoji, const QFontMetrics
 
 std::vector<std::string> defaultEmojiAliasFiles = {
   ":/res/aliases/github-emojis.ini",
-  ":/res/aliases/gitmoji-emojis.ini",
 };
 
 std::vector<std::string> EmojiPickerSettings::emojiAliasFiles() {
@@ -167,14 +165,6 @@ bool EmojiPickerSettings::closeAfterFirstInput() const {
 
 void EmojiPickerSettings::closeAfterFirstInput(bool closeAfterFirstInput) {
   setValue("closeAfterFirstInput", closeAfterFirstInput);
-}
-
-bool EmojiPickerSettings::hideStatusBar() const {
-  return value("hideStatusBar", false).toBool();
-}
-
-void EmojiPickerSettings::hideStatusBar(bool hideStatusBar) {
-  setValue("hideStatusBar", hideStatusBar);
 }
 
 bool EmojiPickerSettings::useSystemEmojiFont() const {

@@ -1,7 +1,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
   <qresource>
-    <!-- <file>EmojiWindow.qss</file> -->
+    <file>EmojiPickerWindow.qss</file>
     <file>res/im-emoji-picker_72x72.png</file>
     <file>res/aliases/github-emojis.ini</file>
     <file>res/aliases/gitmoji-emojis.ini</file>

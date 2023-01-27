@@ -3,6 +3,7 @@
 #include "EmojiLabel.hpp"
 #include "EmojiPickerSettings.hpp"
 #include "ThreadsafeQueue.hpp"
+#include "kaomojis.hpp"
 #include <QGridLayout>
 #include <QKeyEvent>
 #include <QLineEdit>
@@ -15,6 +16,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -101,11 +103,19 @@ public Q_SLOTS:
   void setCursorLocation(const QRect* rect);
   void processKeyEvent(const QKeyEvent* event);
 
+protected:
+  void wheelEvent(QWheelEvent* event) override;
+
 private:
   EmojiPickerSettings _settings;
 
-  std::vector<std::shared_ptr<QWidgetItem>> _emojiLayoutItems;
-  std::vector<std::shared_ptr<QWidgetItem>> _kaomojiLayoutItems;
+  QWidgetItem* createEmojiLabel(std::unordered_map<std::string, QWidgetItem*>& layoutItems, const Emoji& emoji);
+
+  std::unordered_map<std::string, QWidgetItem*> _emojiLayoutItems;
+  QWidgetItem* getEmojiLayoutItem(const Emoji& emoji);
+
+  std::unordered_map<std::string, QWidgetItem*> _kaomojiLayoutItems;
+  QWidgetItem* getKaomojiLayoutItem(const Kaomoji& kaomoji);
 
   int _selectedRow = 0;
   int _selectedColumn = 0;
@@ -150,6 +160,8 @@ private:
   };
 
   ViewMode _mode = ViewMode::MRU;
+
+  void commitEmoji(const Emoji& emoji, bool isRealEmoji, bool closeAfter);
 };
 
 void gui_main(int argc, char** argv);
