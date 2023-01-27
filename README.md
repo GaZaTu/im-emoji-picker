@@ -12,7 +12,7 @@ This project took heavy inspiration from the "predecessor" [https://github.com/G
 
 ![docs/screenshot2.png](docs/screenshot2.png)
 
-*System emoji font support (OpenSUSE 15.1 with KDE (XServer) and IBus):*
+*System emoji font support (openSUSE 15.1 with KDE (XServer) and IBus):*
 
 ![docs/screenshot1.png](docs/screenshot1.png)
 
@@ -52,7 +52,7 @@ Download a `-ubuntu-*.deb` from [/releases](https://github.com/GaZaTu/im-emoji-p
 
 - Terminal: `sudo apt install ./im-emoji-picker-*.deb`
 
-**OpenSUSE**:
+**openSUSE**:
 Download a `-opensuse-*.rpm` from [/releases](https://github.com/GaZaTu/im-emoji-picker/releases) and install it.
 
 - Terminal: `sudo zypper install ./im-emoji-picker-*.rpm`
