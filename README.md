@@ -42,6 +42,14 @@ Download the [install.sh](install.sh) and run it. It downloads and installs eith
 
 Otherwise look at the following options:
 
+**"I use Arch btw"**:
+run `yay -S im-emoji-picker-fcitx5-git` or `yay -S im-emoji-picker-ibus-git`.
+
+- repo (fcitx5): [https://aur.archlinux.org/packages/im-emoji-picker-fcitx5-git](https://aur.archlinux.org/packages/im-emoji-picker-fcitx5-git)
+- repo (ibus): [https://aur.archlinux.org/packages/im-emoji-picker-ibus-git](https://aur.archlinux.org/packages/im-emoji-picker-ibus-git)
+- yay: [https://github.com/Jguer/yay#installation](https://github.com/Jguer/yay#installation)
+- manjaro: [https://wiki.manjaro.org/index.php/Arch_User_Repository](https://wiki.manjaro.org/index.php/Arch_User_Repository)
+
 **Debian**:
 Download a `-debian-*.deb` from [/releases](https://github.com/GaZaTu/im-emoji-picker/releases) and install it.
 
