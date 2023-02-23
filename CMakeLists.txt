@@ -150,7 +150,7 @@ if (NOT ("${SKIP_FCITX5}" STREQUAL "1"))
 
     set(SRC_FILES_FCITX5
       ${SRC_FILES_COMMON}
-      src/Fcitx5ImEmojiPickerEngine.cpp
+      src/Fcitx5ImEmojiPickerModule.cpp
     )
 
     add_library(fcitx5imemojipicker SHARED ${SRC_FILES_FCITX5})
@@ -172,7 +172,6 @@ if (NOT ("${SKIP_FCITX5}" STREQUAL "1"))
 
     install(TARGETS fcitx5imemojipicker LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/fcitx5)
     install(FILES ${PROJECT_SOURCE_DIR}/fcitx5-addon.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/addon RENAME fcitx5imemojipicker.conf)
-    install(FILES ${PROJECT_SOURCE_DIR}/fcitx5-inputmethod.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/inputmethod RENAME fcitx5imemojipicker.conf)
     install(FILES ${PROJECT_SOURCE_DIR}/src/res/im-emoji-picker_32x32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps RENAME im-emoji-picker.png)
     install(CODE "execute_process(COMMAND touch /usr/share/icons/hicolor)")
   endif ()
