@@ -80,11 +80,11 @@ After installing *I'm Emoji Picker* theres some steps required to make it work.
   - Install it
   - Setup `/etc/environment`
   - Add IMF to autostart
-- Add *I'm Emoji Picker* to your input methods next to your keyboard language.
-- Maybe configure a global shortcut with which to change the current input method and open the emoji picker.
-  - Advanced: you could also use the `ibus` or `fcitx5-remote` commands to switch the input method directly
 
 ### With Fcitx5
+
+I'm Emoji Picker is implemented as an Fcitx module (NOT as an input method) which means you don't need to add it to your list of used input methods.
+It will work regardless of which input method you have active. In the Fcitx settings you should see `I'm Emoji Picker` in the `Module` group. There you can configure the keyboard shortcut with which you open the emoji picker. (Default: `Control+Alt+Shift+.`)
 
 See [https://wiki.archlinux.org/title/Fcitx5](https://wiki.archlinux.org/title/Fcitx5).
 
@@ -101,6 +101,10 @@ XMODIFIERS=@im=fcitx
 Create an autostart entry for fcitx5. (works out of the box with some DEs)
 
 ### With IBus
+
+- Add *I'm Emoji Picker* to your input methods next to your keyboard language.
+- Maybe configure a global shortcut with which to change the current input method and open the emoji picker.
+  - Advanced: you could also use the `ibus` command to switch the input method directly
 
 See [https://wiki.archlinux.org/title/IBus](https://wiki.archlinux.org/title/IBus).
 
