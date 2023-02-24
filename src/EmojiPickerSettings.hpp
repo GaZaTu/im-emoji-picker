@@ -47,6 +47,12 @@ public:
 
   bool useSystemEmojiFontWidthHeuristics() const;
   void useSystemEmojiFontWidthHeuristics(bool useSystemEmojiFontWidthHeuristics);
+
+  std::string scaleFactor() const;
+  void scaleFactor(std::string scaleFactor);
+
+  bool saveKaomojiInMRU() const;
+  void saveKaomojiInMRU(bool saveKaomojiInMRU);
 };
 
 class EmojiPickerCache : public QSettings {

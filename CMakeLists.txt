@@ -129,7 +129,7 @@ if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
     install(TARGETS ibusimemojipicker RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/ibus)
     install(FILES ${PROJECT_SOURCE_DIR}/ibus-component.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ibus/component RENAME ibusimemojipicker.xml)
     install(FILES ${PROJECT_SOURCE_DIR}/src/res/im-emoji-picker_32x32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps RENAME im-emoji-picker.png)
-    install(CODE "execute_process(COMMAND touch /usr/share/icons/hicolor)")
+    install(CODE "execute_process(COMMAND touch ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor)")
     install(CODE "execute_process(COMMAND ibus write-cache)")
 
     # TODO maybe:

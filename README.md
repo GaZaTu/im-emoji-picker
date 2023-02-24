@@ -43,10 +43,10 @@ Download the [install.sh](install.sh) and run it. It downloads and installs eith
 Otherwise look at the following options:
 
 **"I use Arch btw"**:
-run `yay -S im-emoji-picker-fcitx5-git` or `yay -S im-emoji-picker-ibus-git`.
+run `yay -S fcitx5-im-emoji-picker-git` or `yay -S ibus-im-emoji-picker-git`.
 
-- repo (fcitx5): [https://aur.archlinux.org/packages/im-emoji-picker-fcitx5-git](https://aur.archlinux.org/packages/im-emoji-picker-fcitx5-git)
-- repo (ibus): [https://aur.archlinux.org/packages/im-emoji-picker-ibus-git](https://aur.archlinux.org/packages/im-emoji-picker-ibus-git)
+- repo (fcitx5): [https://aur.archlinux.org/packages/fcitx5-im-emoji-picker-git](https://aur.archlinux.org/packages/fcitx5-im-emoji-picker-git)
+- repo (ibus): [https://aur.archlinux.org/packages/ibus-im-emoji-picker-git](https://aur.archlinux.org/packages/ibus-im-emoji-picker-git)
 - yay: [https://github.com/Jguer/yay#installation](https://github.com/Jguer/yay#installation)
 - manjaro: [https://wiki.manjaro.org/index.php/Arch_User_Repository](https://wiki.manjaro.org/index.php/Arch_User_Repository)
 
@@ -80,11 +80,11 @@ After installing *I'm Emoji Picker* theres some steps required to make it work.
   - Install it
   - Setup `/etc/environment`
   - Add IMF to autostart
+- Add *I'm Emoji Picker* to your input methods next to your keyboard language.
+- Maybe configure a global shortcut with which to change the current input method and open the emoji picker.
+  - Advanced: you could also use the `ibus` or `fcitx5-remote` commands to switch the input method directly
 
 ### With Fcitx5
-
-I'm Emoji Picker is implemented as an Fcitx module (NOT as an input method) which means you don't need to add it to your list of used input methods.
-It will work regardless of which input method you have active. In the Fcitx settings you should see `I'm Emoji Picker` in the `Module` group. There you can configure the keyboard shortcut with which you open the emoji picker. (Default: `Control+Alt+Shift+.`)
 
 See [https://wiki.archlinux.org/title/Fcitx5](https://wiki.archlinux.org/title/Fcitx5).
 
@@ -101,10 +101,6 @@ XMODIFIERS=@im=fcitx
 Create an autostart entry for fcitx5. (works out of the box with some DEs)
 
 ### With IBus
-
-- Add *I'm Emoji Picker* to your input methods next to your keyboard language.
-- Maybe configure a global shortcut with which to change the current input method and open the emoji picker.
-  - Advanced: you could also use the `ibus` command to switch the input method directly
 
 See [https://wiki.archlinux.org/title/IBus](https://wiki.archlinux.org/title/IBus).
 
@@ -128,6 +124,7 @@ Execute `ibus-setup` to open the IBus settings so you can add *I'm Emoji Picker*
 ; The path of this file should be: $XDG_CONFIG_HOME/gazatu.xyz/im-emoji-picker.ini
 ; $XDG_CONFIG_HOME is usually ~/.config
 ; Can also be opened by pressing F4 while the emoji picker is open.
+; most options require you to restart the IMF (fcitx or ibus)
 
 [General]
 ; `true` = Immediately close the emoji picker after pressing enter.
@@ -137,6 +134,12 @@ closeAfterFirstInput=false
 gendersDisabled=false
 ; `not -1` = Any emoji released after this number is hidden
 maxEmojiVersion=-1
+; `true` = remember recently used kaomoji
+saveKaomojiInMRU=false
+; `float` = scale the emoji picker based on this number (for example 1.25)
+; `` = use QT_SCALE_FACTOR
+; ALERT: doesn't work currently
+scaleFactor=
 ; `true` = Only skin tone neutral emojis are visible (hands for example)
 skinTonesDisabled=false
 ; `true` = Use your system emoji font instead of the bundled Twemoji images to display emojis
@@ -200,9 +203,6 @@ size=1
 
 - Qt5 (core, gui, widgets)
 - ICU (uc)
-
-### Optional Dependencies
-
 - fcitx5 or ibus
 
 ### Example Commands To Install Dependencies (probably)
