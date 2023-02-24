@@ -88,6 +88,10 @@ enum class EmojiAction {
 
 EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event);
 
+void moveQWidgetToCenter(QWidget* window);
+
+void moveQWidgetToPoint(QWidget* window, QPoint windowPoint);
+
 struct EmojiPickerWindow : public QMainWindow {
   Q_OBJECT
 
@@ -95,6 +99,9 @@ public:
   std::function<void(const std::string&)> commitText;
 
   explicit EmojiPickerWindow();
+
+  void updateSearchCompletion();
+  void updateEmojiList();
 
 public Q_SLOTS:
   void reset();
@@ -104,17 +111,19 @@ public Q_SLOTS:
   void processKeyEvent(const QKeyEvent* event);
 
 protected:
+  void changeEvent(QEvent* event) override;
+
   void wheelEvent(QWheelEvent* event) override;
 
 private:
+  int _rowSize = 10;
+
   EmojiPickerSettings _settings;
 
-  QWidgetItem* createEmojiLabel(std::unordered_map<std::string, QWidgetItem*>& layoutItems, const Emoji& emoji);
-
   std::unordered_map<std::string, QWidgetItem*> _emojiLayoutItems;
-  QWidgetItem* getEmojiLayoutItem(const Emoji& emoji);
+  QWidgetItem* createEmojiLabel(const Emoji& emoji);
 
-  std::unordered_map<std::string, QWidgetItem*> _kaomojiLayoutItems;
+  QWidgetItem* getEmojiLayoutItem(const Emoji& emoji);
   QWidgetItem* getKaomojiLayoutItem(const Kaomoji& kaomoji);
 
   int _selectedRow = 0;
@@ -139,13 +148,19 @@ private:
   EmojiLabel* _listModeLabel = new EmojiLabel(_statusBar, _settings);
   EmojiLabel* _kaomojiModeLabel = new EmojiLabel(_statusBar, _settings);
 
-  void addItemToEmojiList(QLayoutItem* emojiLayoutItem, EmojiLabel* label, int& row, int& column);
+  void addItemToEmojiList(QLayoutItem* emojiLayoutItem, EmojiLabel* label, int colspan, int& row, int& column);
 
-  void updateSearchCompletion();
-  void updateEmojiList();
+  enum class SearchMode {
+    AUTO,
+    CONTAINS,
+    STARTS_WITH,
+    EQUALS,
+  };
 
-  bool emojiMatchesSearch(const Emoji& emoji, const QString& search, bool mustStartWith, QString& found);
-  bool emojiMatchesSearch(const Emoji& emoji, const QString& search, bool mustStartWith);
+  static bool stringMatches(const QString& target, const QString& search, SearchMode mode);
+
+  bool emojiMatchesSearch(const Emoji& emoji, const QString& search, SearchMode mode, QString& found);
+  bool emojiMatchesSearch(const Emoji& emoji, const QString& search, SearchMode mode);
 
   std::unordered_set<std::string> _disabledEmojis;
 
@@ -162,6 +177,8 @@ private:
   ViewMode _mode = ViewMode::MRU;
 
   void commitEmoji(const Emoji& emoji, bool isRealEmoji, bool closeAfter);
+
+  bool _closing = false;
 };
 
 void gui_main(int argc, char** argv);

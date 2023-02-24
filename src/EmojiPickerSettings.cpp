@@ -47,6 +47,8 @@ void EmojiPickerSettings::writeDefaultsToDisk() {
   s.closeAfterFirstInput(s.closeAfterFirstInput());
   s.useSystemEmojiFont(s.useSystemEmojiFont());
   s.useSystemEmojiFontWidthHeuristics(s.useSystemEmojiFontWidthHeuristics());
+  s.scaleFactor(s.scaleFactor());
+  s.saveKaomojiInMRU(s.saveKaomojiInMRU());
 }
 
 EmojiPickerSettings::EmojiPickerSettings() : QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName(), nullptr) {
@@ -181,6 +183,20 @@ bool EmojiPickerSettings::useSystemEmojiFontWidthHeuristics() const {
 
 void EmojiPickerSettings::useSystemEmojiFontWidthHeuristics(bool useSystemEmojiFontWidthHeuristics) {
   setValue("useSystemEmojiFontWidthHeuristics", useSystemEmojiFontWidthHeuristics);
+}
+
+std::string EmojiPickerSettings::scaleFactor() const {
+  return value("scaleFactor", "").toString().toStdString();
+}
+void EmojiPickerSettings::scaleFactor(std::string scaleFactor) {
+  setValue("scaleFactor", QString::fromStdString(scaleFactor));
+}
+
+bool EmojiPickerSettings::saveKaomojiInMRU() const {
+  return value("saveKaomojiInMRU", false).toBool();
+}
+void EmojiPickerSettings::saveKaomojiInMRU(bool saveKaomojiInMRU) {
+  setValue("saveKaomojiInMRU", saveKaomojiInMRU);
 }
 
 EmojiPickerCache::EmojiPickerCache() : QSettings(path(), QSettings::IniFormat) {
