@@ -51,10 +51,15 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${PROJECT_ORGANIZATION})
 set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${PROJECT_SOURCE_DIR}/postinst")
 
+include(FindPkgConfig)
+
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
 find_package(ICU REQUIRED COMPONENTS uc)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
+
+option(ONLY_FCITX5 "Build only with Fcitx 5 Support" Off)
+option(ONLY_IBUS "Build only with IBus Support" Off)
 
 set(SRC_FILES_COMMON
   src/logging.cpp
@@ -67,114 +72,88 @@ set(SRC_FILES_COMMON
   src/EmojiLabel.cpp
 )
 
-if ("${ONLY_IBUS}" STREQUAL "1")
-  set(SKIP_FCITX5 "1")
+set(SKIP_FCITX5 FALSE)
+set(SKIP_IBUS FALSE)
+
+if (ONLY_IBUS)
+  set(SKIP_FCITX5 TRUE)
 endif ()
 
-if ("${ONLY_FCITX5}" STREQUAL "1")
-  set(SKIP_IBUS "1")
+if (ONLY_FCITX5)
+  set(SKIP_IBUS TRUE)
 endif ()
 
-if (NOT ("${SKIP_IBUS}" STREQUAL "1"))
-  find_library(IBUS_LIB ibus-1.0)
-  find_library(GLIB_LIB glib-2.0)
-  find_library(GOBJECT_LIB gobject-2.0)
+if (NOT SKIP_IBUS)
+  pkg_check_modules(IBus REQUIRED IMPORTED_TARGET ibus-1.0)
+  pkg_check_modules(GLib REQUIRED IMPORTED_TARGET glib-2.0)
+  pkg_check_modules(GObject REQUIRED IMPORTED_TARGET gobject-2.0)
 
-  if (NOT ("${IBUS_LIB}" STREQUAL "IBUS_LIB-NOTFOUND"))
-    add_library(IBUS STATIC SHARED IMPORTED)
-    set_target_properties(IBUS PROPERTIES
-      IMPORTED_LOCATION ${IBUS_LIB}
-    )
+  set(SRC_FILES_IBUS
+    ${SRC_FILES_COMMON}
+    src/ibus_main.cpp
+    src/IBusImEmojiPickerEngine.cpp
+  )
 
-    add_library(GLIB STATIC SHARED IMPORTED)
-    set_target_properties(GLIB PROPERTIES
-      IMPORTED_LOCATION ${GLIB_LIB}
-    )
+  add_executable(ibusimemojipicker ${SRC_FILES_IBUS})
 
-    add_library(GOBJECT STATIC SHARED IMPORTED)
-    set_target_properties(GOBJECT PROPERTIES
-      IMPORTED_LOCATION ${GOBJECT_LIB}
-    )
+  set_target_properties(ibusimemojipicker PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+  )
 
-    include_directories(/usr/include/ibus-1.0)
-    include_directories(/usr/include/glib-2.0)
-    include_directories(/usr/lib/glib-2.0/include)
-    include_directories(/usr/lib64/glib-2.0/include)
-    include_directories(/usr/lib/x86_64-linux-gnu/glib-2.0/include)
+  target_link_libraries(ibusimemojipicker
+    Qt5::Core
+    Qt5::Gui
+    Qt5::Widgets
+    ICU::uc
+    PkgConfig::IBus
+    PkgConfig::GLib
+    PkgConfig::GObject
+  )
 
-    set(SRC_FILES_IBUS
-      ${SRC_FILES_COMMON}
-      src/ibus_main.cpp
-      src/IBusImEmojiPickerEngine.cpp
-    )
+  install(TARGETS ibusimemojipicker RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/ibus)
+  install(FILES ${PROJECT_SOURCE_DIR}/ibus-component.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ibus/component RENAME ibusimemojipicker.xml)
+  install(FILES ${PROJECT_SOURCE_DIR}/src/res/im-emoji-picker_32x32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps RENAME im-emoji-picker.png)
+  install(CODE "execute_process(COMMAND touch ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor)")
+  install(CODE "execute_process(COMMAND ibus write-cache)")
 
-    add_executable(ibusimemojipicker ${SRC_FILES_IBUS})
-
-    set_target_properties(ibusimemojipicker PROPERTIES
-      CXX_STANDARD 17
-      CXX_STANDARD_REQUIRED ON
-      CXX_EXTENSIONS OFF
-    )
-
-    target_link_libraries(ibusimemojipicker
-      Qt5::Core
-      Qt5::Gui
-      Qt5::Widgets
-      ICU::uc
-      ${IBUS_LIB}
-      ${GLIB_LIB}
-      ${GOBJECT_LIB}
-    )
-
-    install(TARGETS ibusimemojipicker RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/ibus)
-    install(FILES ${PROJECT_SOURCE_DIR}/ibus-component.xml DESTINATION ${CMAKE_INSTALL_PREFIX}/share/ibus/component RENAME ibusimemojipicker.xml)
-    install(FILES ${PROJECT_SOURCE_DIR}/src/res/im-emoji-picker_32x32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps RENAME im-emoji-picker.png)
-    install(CODE "execute_process(COMMAND touch ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor)")
-    install(CODE "execute_process(COMMAND ibus write-cache)")
-
-    # TODO maybe:
-    # add_custom_target(appimage
-    #   COMMAND make install DESTDIR=${CMAKE_BINARY_DIR}/_AppDir
-    #   COMMAND VERSION=dev linuxdeployqt.AppImage ${CMAKE_BINARY_DIR}/_AppDir/usr/share/applications/${PROJECT_NAME_FULL}.desktop -appimage -no-translations
-    # )
-  endif ()
+  # TODO maybe:
+  # add_custom_target(appimage
+  #   COMMAND make install DESTDIR=${CMAKE_BINARY_DIR}/_AppDir
+  #   COMMAND VERSION=dev linuxdeployqt.AppImage ${CMAKE_BINARY_DIR}/_AppDir/usr/share/applications/${PROJECT_NAME_FULL}.desktop -appimage -no-translations
+  # )
 endif ()
 
-if (NOT ("${SKIP_FCITX5}" STREQUAL "1"))
-  find_package(Fcitx5Core)
+if (NOT SKIP_FCITX5)
+  find_package(Fcitx5Core REQUIRED)
 
-  if ("${Fcitx5Core_FOUND}" STREQUAL "1")
-    include_directories(/usr/include/Fcitx5/Core)
-    include_directories(/usr/include/Fcitx5/Config)
-    include_directories(/usr/include/Fcitx5/Utils)
+  set(SRC_FILES_FCITX5
+    ${SRC_FILES_COMMON}
+    src/Fcitx5ImEmojiPickerModule.cpp
+  )
 
-    set(SRC_FILES_FCITX5
-      ${SRC_FILES_COMMON}
-      src/Fcitx5ImEmojiPickerModule.cpp
-    )
+  add_library(fcitx5imemojipicker SHARED ${SRC_FILES_FCITX5})
 
-    add_library(fcitx5imemojipicker SHARED ${SRC_FILES_FCITX5})
+  set_target_properties(fcitx5imemojipicker PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS OFF
+    PREFIX ""
+  )
 
-    set_target_properties(fcitx5imemojipicker PROPERTIES
-      CXX_STANDARD 17
-      CXX_STANDARD_REQUIRED ON
-      CXX_EXTENSIONS OFF
-      PREFIX ""
-    )
+  target_link_libraries(fcitx5imemojipicker
+    Qt5::Core
+    Qt5::Gui
+    Qt5::Widgets
+    ICU::uc
+    Fcitx5::Core
+  )
 
-    target_link_libraries(fcitx5imemojipicker
-      Qt5::Core
-      Qt5::Gui
-      Qt5::Widgets
-      ICU::uc
-      Fcitx5::Core
-    )
-
-    install(TARGETS fcitx5imemojipicker LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/fcitx5)
-    install(FILES ${PROJECT_SOURCE_DIR}/fcitx5-addon.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/addon RENAME fcitx5imemojipicker.conf)
-    install(FILES ${PROJECT_SOURCE_DIR}/src/res/im-emoji-picker_32x32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps RENAME im-emoji-picker.png)
-    install(CODE "execute_process(COMMAND touch /usr/share/icons/hicolor)")
-  endif ()
+  install(TARGETS fcitx5imemojipicker LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/fcitx5)
+  install(FILES ${PROJECT_SOURCE_DIR}/fcitx5-addon.conf DESTINATION ${CMAKE_INSTALL_PREFIX}/share/fcitx5/addon RENAME fcitx5imemojipicker.conf)
+  install(FILES ${PROJECT_SOURCE_DIR}/src/res/im-emoji-picker_32x32.png DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/32x32/apps RENAME im-emoji-picker.png)
+  install(CODE "execute_process(COMMAND touch /usr/share/icons/hicolor)")
 endif ()
 
 include(CPack)
