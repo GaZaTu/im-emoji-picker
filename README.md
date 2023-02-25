@@ -8,7 +8,7 @@ This project took heavy inspiration from the "predecessor" [https://github.com/G
 
 ## Screenshots 😮
 
-*Wayland support (Arch Linux with Sway (Wayland) and Fcitx5):*
+*Recently used emoji (EndeavourOS with KDE (XServer) and Fcitx5):*
 
 ![docs/screenshot2.png](docs/screenshot2.png)
 
