@@ -7,7 +7,7 @@
 #include <fcitx/addonmanager.h>
 #include <fcitx/instance.h>
 
-FCITX_CONFIGURATION(Fcitx5ImEmojiPickerModuleConfig, fcitx::KeyListOption triggerKey{this, "TriggerKey", "Trigger Key", {fcitx::Key("Control+Alt+Shift+period")}, fcitx::KeyListConstrain()};);
+FCITX_CONFIGURATION(Fcitx5ImEmojiPickerModuleConfig, fcitx::KeyListOption triggerKey{this, "TriggerKey", "Trigger Key", {fcitx::Key("Control+Alt+period")}, fcitx::KeyListConstrain()};);
 
 class Fcitx5ImEmojiPickerModule : public fcitx::AddonInstance {
 public:
