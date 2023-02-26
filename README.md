@@ -138,22 +138,27 @@ maxEmojiVersion=-1
 saveKaomojiInMRU=false
 ; `float` = scale the emoji picker based on this number (for example 1.25)
 ; `` = use QT_SCALE_FACTOR
+; (requires IMF restart)
 ; ALERT: doesn't work currently
 scaleFactor=
 ; `true` = Only skin tone neutral emojis are visible (hands for example)
 skinTonesDisabled=false
 ; `true` = Use your system emoji font instead of the bundled Twemoji images to display emojis
+; (requires IMF restart)
 useSystemEmojiFont=false
 ; `true` = Automatically try to scale or hide emojis based on their system emoji font support
 ; (May lead to false positives)
 useSystemEmojiFontWidthHeuristics=true
 ; `true` = Use the system Qt theme instead of the builtin dark fusion theme
+; (requires IMF restart)
 useSystemQtTheme=false
 ; `0` = Invisible emoji picker window
+; (requires IMF restart)
 windowOpacity=0.9
 
 ; The files to load emoji aliases from.
 ; Refer to src/res/aliases/github-emojis.ini for an example
+; (requires IMF restart)
 [emojiAliasFiles]
 1\path=:/res/aliases/github-emojis.ini
 size=1
