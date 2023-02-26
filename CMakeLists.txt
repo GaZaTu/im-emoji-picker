@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7.2 FATAL_ERROR)
-project(im-emoji-picker VERSION 1.0.1 LANGUAGES CXX)
+project(im-emoji-picker VERSION 1.1.0 LANGUAGES CXX)
 
 set(PROJECT_NAME_FULL ${PROJECT_NAME})
 set(PROJECT_ORGANIZATION gazatu.xyz)
