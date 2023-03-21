@@ -39,7 +39,12 @@ QPoint createPointInScreen(QWidget* window, QRect newPoint) {
   QRect windowRect = window->geometry();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-  QRect screenRect = QApplication::screenAt(result)->geometry();
+  QScreen* screen = QApplication::screenAt(result);
+  if (!screen) {
+    return result;
+  }
+  
+  QRect screenRect = screen->geometry();
 #else
   QRect screenRect = QApplication::desktop()->availableGeometry(result);
 #endif
