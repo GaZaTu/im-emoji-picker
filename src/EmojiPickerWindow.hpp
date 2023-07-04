@@ -32,7 +32,9 @@ struct EmojiCommandEnable : public EmojiCommand {
 public:
   std::function<void(const std::string&)> commitText;
 
-  EmojiCommandEnable(std::function<void(const std::string&)> commitText) : EmojiCommand(), commitText{std::move(commitText)} {
+  bool resetPosition;
+
+  EmojiCommandEnable(std::function<void(const std::string&)> commitText, bool resetPosition = true) : EmojiCommand(), commitText{std::move(commitText)}, resetPosition{resetPosition} {
   }
 };
 
@@ -86,6 +88,8 @@ enum class EmojiAction {
   INSERT_CHAR_IN_SEARCH,
 };
 
+QKeyEvent* createKeyEventWithUserPreferences(QEvent::Type _type, int _key, Qt::KeyboardModifiers _modifiers, const QString& _text);
+
 EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event);
 
 void moveQWidgetToCenter(QWidget* window);
@@ -105,7 +109,7 @@ public:
 
 public Q_SLOTS:
   void reset();
-  void enable();
+  void enable(bool resetPosition = true);
   void disable();
   void setCursorLocation(const QRect* rect);
   void processKeyEvent(const QKeyEvent* event);
@@ -180,5 +184,7 @@ private:
 
   bool _closing = false;
 };
+
+void gui_set_active(bool active);
 
 void gui_main(int argc, char** argv);

@@ -130,6 +130,7 @@ static gboolean ibus_im_emoji_picker_engine_process_key_event(IBusEngine* engine
     return FALSE;
   }
 
+  QString _text = QString::fromStdString(std::string{(char)keyval});
   QKeyEvent::Type _type = (modifiers & IBUS_RELEASE_MASK) ? QKeyEvent::KeyRelease : QKeyEvent::KeyPress;
   int _key = 0;
   switch (keycode) {
@@ -169,6 +170,9 @@ static gboolean ibus_im_emoji_picker_engine_process_key_event(IBusEngine* engine
   case KEYCODE_F4: // IBUS_KEY_f4:
     _key = Qt::Key_F4;
     break;
+  default:
+    _key = QKeySequence{_text, QKeySequence::PortableText}[0];
+    break;
   }
   Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
   if (modifiers & IBUS_SUPER_MASK) {
@@ -180,9 +184,8 @@ static gboolean ibus_im_emoji_picker_engine_process_key_event(IBusEngine* engine
   if (modifiers & IBUS_SHIFT_MASK) {
     _modifiers |= Qt::ShiftModifier;
   }
-  QString _text = QString::fromStdString(std::string{(char)keyval});
 
-  QKeyEvent* qevent = new QKeyEvent(_type, _key, _modifiers, _text);
+  QKeyEvent* qevent = createKeyEventWithUserPreferences(_type, _key, _modifiers, _text);
   EmojiAction action = getEmojiActionForQKeyEvent(qevent);
 
   if (action != EmojiAction::INVALID) {
