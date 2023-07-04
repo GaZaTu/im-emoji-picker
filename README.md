@@ -156,6 +156,14 @@ useSystemQtTheme=false
 ; (requires IMF restart)
 windowOpacity=0.9
 
+; Use something like the following to add custom hotkeys (target = the default key press as seen below):
+; [customHotKeys]
+; 1\sourceKeyChr=#
+; 1\targetKeySeq=shift+tab
+; size=1
+[customHotKeys]
+size=0
+
 ; The files to load emoji aliases from.
 ; Refer to src/res/aliases/github-emojis.ini for an example
 ; (requires IMF restart)
@@ -194,6 +202,7 @@ size=1
 - `return` = write emoji to target input
 - `shift+return` = write emoji to target input and close emoji picker
 - `tab` = change view (MRU, List, Kaomoji)
+- `shift+tab` = change view (MRU, List, Kaomoji) (reverse)
 - `f4` = open settings file and close emoji picker
 
 ## Building 🤓

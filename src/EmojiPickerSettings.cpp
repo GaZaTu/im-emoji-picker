@@ -206,18 +206,18 @@ std::unordered_map<char, QKeySequence> EmojiPickerSettings::customHotKeys() {
   int len = beginReadArray("customHotKeys");
   for (int i = 0; i < len; i++) {
     setArrayIndex(i);
-    result.emplace(value("sourceKeyChr").toString().at(0).toLatin1(), QKeySequence::fromString(value("targetKeySeq").toString(), QKeySequence::PortableText));
+
+    auto keyValue = value("sourceKeyChr");
+    char key = 0;
+    if (keyValue.type() == QVariant::StringList) {
+      key = ',';
+    } else {
+      key = keyValue.toString().at(0).toLatin1();
+    }
+    auto target = QKeySequence{value("targetKeySeq").toString(), QKeySequence::PortableText};
+    result.emplace(key, target);
   }
   endArray();
-
-// 1\sourceKeyChr=p
-// 1\targetKeySeq=tab
-// 2\sourceKeyChr=o
-// 2\targetKeySeq=shift+tab
-// 3\sourceKeyChr=,
-// 3\targetKeySeq=left
-// 4\sourceKeyChr=.
-// 4\targetKeySeq=right
 
   return result;
 }
@@ -226,7 +226,11 @@ void EmojiPickerSettings::customHotKeys(const std::unordered_map<char, QKeySeque
   int i = 0;
   for (const auto& [key, target] : customHotKeys) {
     setArrayIndex(i++);
-    setValue("sourceKeyChr", QString::fromStdString(std::string{key}));
+    if (key == ',') {
+      setValue("sourceKeyChr", QStringList{"", ""});
+    } else {
+      setValue("sourceKeyChr", QString::fromStdString(std::string{key}));
+    }
     setValue("targetKeySeq", target.toString(QKeySequence::PortableText));
   }
   endArray();
