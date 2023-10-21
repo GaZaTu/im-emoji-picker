@@ -54,17 +54,23 @@ Fcitx5ImEmojiPickerModule::Fcitx5ImEmojiPickerModule(fcitx::Instance* instance) 
   _eventHandlers.emplace_back(_instance->watchEvent(fcitx::EventType::InputContextFocusOut, fcitx::EventWatcherPhase::Default, [this](fcitx::Event& _event) {
     auto& event = static_cast<fcitx::InputContextEvent&>(_event);
 
+    log_printf("[debug] Fcitx5ImEmojiPickerModule::_eventHandlers[InputContextFocusOut]\n");
+
     deactivate(event);
   }));
 
   _eventHandlers.emplace_back(_instance->watchEvent(fcitx::EventType::InputContextReset, fcitx::EventWatcherPhase::Default, [this](fcitx::Event& _event) {
     auto& event = static_cast<fcitx::InputContextEvent&>(_event);
 
+    log_printf("[debug] Fcitx5ImEmojiPickerModule::_eventHandlers[InputContextReset]\n");
+
     deactivate(event);
   }));
 
   _eventHandlers.emplace_back(_instance->watchEvent(fcitx::EventType::InputContextSwitchInputMethod, fcitx::EventWatcherPhase::Default, [this](fcitx::Event& _event) {
     auto& event = static_cast<fcitx::InputContextEvent&>(_event);
+
+    log_printf("[debug] Fcitx5ImEmojiPickerModule::_eventHandlers[InputContextSwitchInputMethod]\n");
 
     deactivate(event);
   }));
@@ -156,7 +162,7 @@ void Fcitx5ImEmojiPickerModule::keyEvent(fcitx::KeyEvent& keyEvent) {
   EmojiAction action = getEmojiActionForQKeyEvent(qevent);
 
   if (action != EmojiAction::INVALID) {
-    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(qevent));
+    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(qevent, action));
 
     keyEvent.accept();
   } else {
@@ -182,10 +188,9 @@ void Fcitx5ImEmojiPickerModule::activate(fcitx::InputContextEvent& event) {
   sendCursorLocation(event);
 
   emojiCommandQueue.push(std::make_shared<EmojiCommandEnable>([this, inputContext{event.inputContext()}](const std::string& text) {
-    inputContext->commitString(text);
+    log_printf("[debug] Fcitx5ImEmojiPickerModule::(lambda) commitString:%s program:%s\n", text.data(), inputContext->program().data());
 
-    // usleep(10000);
-    // sendCursorLocation(inputContext);
+    inputContext->commitString(text);
   }, false));
 }
 

@@ -35,9 +35,9 @@ void moveQWidgetToCenter(QWidget* window) {
 }
 
 QPoint createPointInScreen(QWidget* window, QRect newPoint) {
-  QPoint result{newPoint.x(), newPoint.y()};
-  result.setX(result.x() + newPoint.width());
-  result.setY(result.y() + newPoint.height());
+  QPoint result{0, 0};
+  result.setX(newPoint.x() + newPoint.width());
+  result.setY(newPoint.y() + newPoint.height());
 
   QRect windowRect = window->geometry();
 
@@ -80,17 +80,19 @@ std::function<void()> resetInputMethodEngine = []() {
 ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emojiCommandQueue;
 
 EmojiPickerWindow::EmojiPickerWindow() : QMainWindow() {
+  setFocusPolicy(Qt::NoFocus);
+  setAttribute(Qt::WA_ShowWithoutActivating);
   setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowDoesNotAcceptFocus);
   setWindowIcon(QIcon(":/res/im-emoji-picker_72x72.png"));
   setWindowOpacity(_settings.windowOpacity());
-  setFocusPolicy(Qt::NoFocus);
-  setAttribute(Qt::WA_ShowWithoutActivating);
+  setWindowTitle("im-emoji-picker");
   setFixedSize(340, 190);
 
   _searchContainerWidget->setLayout(_searchContainerLayout);
   _searchContainerLayout->setStackingMode(QStackedLayout::StackAll);
 
   _searchCompletion->setFocusPolicy(Qt::NoFocus);
+  _searchCompletion->setAttribute(Qt::WA_ShowWithoutActivating);
   _searchCompletion->setReadOnly(true);
   if (_settings.useSystemQtTheme()) {
     _searchCompletion->setStyleSheet(_searchCompletion->styleSheet() + QString("background: #00000000;"));
@@ -574,7 +576,7 @@ void EmojiPickerWindow::setCursorLocation(const QRect* rect) {
   newRect.setY((double)rect->y() / pixelRatio);
   newRect.setWidth((double)rect->width() / pixelRatio);
   newRect.setHeight((double)rect->height() / pixelRatio);
-  newRect.setWidth(0);
+  newRect.setWidth(0); // ????
 
   QPoint newPoint = createPointInScreen(this, newRect);
   // newPoint.setX((double)rect->x() / pixelRatio);
@@ -733,8 +735,10 @@ void EmojiPickerWindow::commitEmoji(const Emoji& emoji, bool isRealEmoji, bool c
   }
 }
 
-void EmojiPickerWindow::processKeyEvent(const QKeyEvent* event) {
-  EmojiAction action = getEmojiActionForQKeyEvent(event);
+void EmojiPickerWindow::processKeyEvent(const QKeyEvent* event, EmojiAction action) {
+  if (action == EmojiAction::INVALID) {
+    action = getEmojiActionForQKeyEvent(event);
+  }
 
   switch (action) {
   case EmojiAction::INVALID:
@@ -945,7 +949,7 @@ void gui_main(int argc, char** argv) {
         window.setCursorLocation(&*command->rect);
       }
       if (auto command = std::dynamic_pointer_cast<EmojiCommandProcessKeyEvent>(_command)) {
-        window.processKeyEvent(&*command->keyEvent);
+        window.processKeyEvent(&*command->keyEvent, command->action);
       }
     }
   });
