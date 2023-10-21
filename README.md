@@ -216,19 +216,18 @@ size=1
 ### Dependencies
 
 - Qt5 (core, gui, widgets)
-- ICU (uc)
 - fcitx5 or ibus
 
 ### Example Commands To Install Dependencies (probably)
 
 **Arch**:
-`sudo pacman -S gcc make cmake qt5-base icu fcitx5 fcitx5-qt fcitx5-gtk`
+`sudo pacman -S gcc make cmake qt5-base fcitx5 fcitx5-qt fcitx5-gtk`
 
 **Debian**:
-`sudo apt install gcc make cmake qtbase5-dev libicu-dev fcitx5 fcitx5-frontend-gtk3 fcitx5-frontend-qt5 im-config`
+`sudo apt install gcc make cmake qtbase5-dev fcitx5 fcitx5-frontend-gtk3 fcitx5-frontend-qt5 im-config`
 
 **openSUSE**:
-`sudo zypper install gcc make cmake libqt5-qtbase-devel libicu-devel ibus-devel`
+`sudo zypper install gcc make cmake libqt5-qtbase-devel ibus-devel`
 
 ### CMake
 

@@ -54,7 +54,6 @@ set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${PROJECT_SOURCE_DIR}/postinst")
 include(FindPkgConfig)
 
 find_package(Qt5 REQUIRED COMPONENTS Core Gui Widgets)
-find_package(ICU REQUIRED COMPONENTS uc)
 
 include_directories(${PROJECT_SOURCE_DIR}/src)
 
@@ -106,7 +105,6 @@ if (NOT SKIP_IBUS)
     Qt5::Core
     Qt5::Gui
     Qt5::Widgets
-    ICU::uc
     PkgConfig::IBus
     PkgConfig::GLib
     PkgConfig::GObject
@@ -146,7 +144,6 @@ if (NOT SKIP_FCITX5)
     Qt5::Core
     Qt5::Gui
     Qt5::Widgets
-    ICU::uc
     Fcitx5::Core
   )
 
