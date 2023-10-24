@@ -51,6 +51,7 @@ int main(int argc, char** argv) {
     exit(EXIT_FAILURE);
   }
 
+  gui_set_active(true);
   gui_main(argc, argv);
 
   g_object_unref(original_engine_info);

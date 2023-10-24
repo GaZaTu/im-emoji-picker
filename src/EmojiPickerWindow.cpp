@@ -16,6 +16,9 @@
 #include <vector>
 #include <QTextStream>
 #include <QFile>
+#include <unistd.h>
+#include <mutex>
+#include <condition_variable>
 
 Emoji convertKaomojiToEmoji(const Kaomoji& kaomoji) {
   return Emoji{kaomoji.name, kaomoji.text, -1};
@@ -32,9 +35,9 @@ void moveQWidgetToCenter(QWidget* window) {
 }
 
 QPoint createPointInScreen(QWidget* window, QRect newPoint) {
-  QPoint result{newPoint.x(), newPoint.y()};
-  result.setX(result.x() + newPoint.width());
-  result.setY(result.y() + newPoint.height());
+  QPoint result{0, 0};
+  result.setX(newPoint.x() + newPoint.width());
+  result.setY(newPoint.y() + newPoint.height());
 
   QRect windowRect = window->geometry();
 
@@ -43,7 +46,6 @@ QPoint createPointInScreen(QWidget* window, QRect newPoint) {
   if (!screen) {
     return result;
   }
-  
   QRect screenRect = screen->geometry();
 #else
   QRect screenRect = QApplication::desktop()->availableGeometry(result);
@@ -78,17 +80,19 @@ std::function<void()> resetInputMethodEngine = []() {
 ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emojiCommandQueue;
 
 EmojiPickerWindow::EmojiPickerWindow() : QMainWindow() {
+  setFocusPolicy(Qt::NoFocus);
+  setAttribute(Qt::WA_ShowWithoutActivating);
   setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint | Qt::WindowDoesNotAcceptFocus);
   setWindowIcon(QIcon(":/res/im-emoji-picker_72x72.png"));
   setWindowOpacity(_settings.windowOpacity());
-  setFocusPolicy(Qt::NoFocus);
-  setAttribute(Qt::WA_ShowWithoutActivating);
+  setWindowTitle("im-emoji-picker");
   setFixedSize(340, 190);
 
   _searchContainerWidget->setLayout(_searchContainerLayout);
   _searchContainerLayout->setStackingMode(QStackedLayout::StackAll);
 
   _searchCompletion->setFocusPolicy(Qt::NoFocus);
+  _searchCompletion->setAttribute(Qt::WA_ShowWithoutActivating);
   _searchCompletion->setReadOnly(true);
   if (_settings.useSystemQtTheme()) {
     _searchCompletion->setStyleSheet(_searchCompletion->styleSheet() + QString("background: #00000000;"));
@@ -513,8 +517,10 @@ void EmojiPickerWindow::reset() {
   disable();
 }
 
-void EmojiPickerWindow::enable() {
-  moveQWidgetToCenter(this);
+void EmojiPickerWindow::enable(bool resetPosition) {
+  if (resetPosition) {
+    moveQWidgetToCenter(this);
+  }
 
   show();
 
@@ -570,13 +576,51 @@ void EmojiPickerWindow::setCursorLocation(const QRect* rect) {
   newRect.setY((double)rect->y() / pixelRatio);
   newRect.setWidth((double)rect->width() / pixelRatio);
   newRect.setHeight((double)rect->height() / pixelRatio);
-  newRect.setWidth(0);
+  newRect.setWidth(0); // ????
 
   QPoint newPoint = createPointInScreen(this, newRect);
   // newPoint.setX((double)rect->x() / pixelRatio);
   // newPoint.setY((double)rect->y() / pixelRatio);
 
   move(newPoint);
+}
+
+QKeyEvent* createKeyEventWithUserPreferences(QEvent::Type _type, int _key, Qt::KeyboardModifiers _modifiers, const QString& _text) {
+  static std::unordered_map<char, QKeySequence> customHotKeys; // lazy
+  static bool customHotKeysLoaded = false;
+  if (!customHotKeysLoaded) {
+    customHotKeysLoaded = true;
+
+    std::unique_ptr<QCoreApplication> dummyApp;
+    if (QCoreApplication::instance() == nullptr) {
+      int argc = 0;
+      char** argv = nullptr;
+      dummyApp = std::make_unique<QCoreApplication>(argc, argv);
+    }
+
+    customHotKeys = EmojiPickerSettings{}.customHotKeys();
+  }
+
+  for (const auto& [key, target] : customHotKeys) {
+    if (_text.at(0).toLatin1() == key) {
+      _key = target[0];
+      _modifiers = Qt::NoModifier;
+      if (target[0] & Qt::ShiftModifier) {
+        _modifiers |= Qt::ShiftModifier;
+        _key &= ~Qt::ShiftModifier;
+      }
+      if (target[0] & Qt::ControlModifier) {
+        _modifiers |= Qt::ControlModifier;
+        _key &= ~Qt::ControlModifier;
+      }
+      if (target[0] & Qt::AltModifier) {
+        _modifiers |= Qt::AltModifier;
+        _key &= ~Qt::AltModifier;
+      }
+    }
+  }
+
+  return new QKeyEvent(_type, _key, _modifiers, _text);
 }
 
 EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event) {
@@ -691,8 +735,10 @@ void EmojiPickerWindow::commitEmoji(const Emoji& emoji, bool isRealEmoji, bool c
   }
 }
 
-void EmojiPickerWindow::processKeyEvent(const QKeyEvent* event) {
-  EmojiAction action = getEmojiActionForQKeyEvent(event);
+void EmojiPickerWindow::processKeyEvent(const QKeyEvent* event, EmojiAction action) {
+  if (action == EmojiAction::INVALID) {
+    action = getEmojiActionForQKeyEvent(event);
+  }
 
   switch (action) {
   case EmojiAction::INVALID:
@@ -839,6 +885,23 @@ void loadScaleFactorFromSettings() {
   }
 }
 
+std::mutex gui_mutex;
+std::condition_variable gui_condition;
+bool gui_is_active = false;
+
+void gui_set_active(bool active) {
+  if (!active) {
+    // give Qt time to actually close the window before the Qt main thread is blocked
+    // (assuming 'EmojiCommandDisable' has been dispatched beforehand)
+    usleep(1000 /*us*/ * 128 /*ms*/);
+  }
+
+  std::unique_lock<decltype(gui_mutex)> lock{gui_mutex};
+  gui_is_active = active;
+  lock.unlock();
+  gui_condition.notify_one();
+}
+
 void gui_main(int argc, char** argv) {
   QApplication::setOrganizationName(PROJECT_ORGANIZATION);
   QApplication::setOrganizationDomain(PROJECT_ORGANIZATION);
@@ -858,17 +921,26 @@ void gui_main(int argc, char** argv) {
 
   EmojiPickerWindow window;
 
-  // TODO: improve the following
-  QTimer emojiCommandProcessor;
-  QObject::connect(&emojiCommandProcessor, &QTimer::timeout, [&window]() {
+  QTimer commandProcessor;
+  commandProcessor.start(32 /*ms*/);
+  QObject::connect(&commandProcessor, &QTimer::timeout, [&commandProcessor, &window]() {
+    // block the entire Qt main thread if gui_is_active == false
+    std::unique_lock<decltype(gui_mutex)> lock{gui_mutex};
+    gui_condition.wait(lock, []() { return gui_is_active; });
+    lock.unlock();
+
     std::shared_ptr<EmojiCommand> _command;
     if (emojiCommandQueue.pop(_command)) {
       if (auto command = std::dynamic_pointer_cast<EmojiCommandEnable>(_command)) {
         window.commitText = command->commitText;
-        window.enable();
+        window.enable(command->resetPosition);
+
+        commandProcessor.setInterval(4 /*ms*/);
       }
       if (auto command = std::dynamic_pointer_cast<EmojiCommandDisable>(_command)) {
         window.disable();
+
+        commandProcessor.setInterval(32 /*ms*/);
       }
       if (auto command = std::dynamic_pointer_cast<EmojiCommandReset>(_command)) {
         window.reset();
@@ -877,11 +949,10 @@ void gui_main(int argc, char** argv) {
         window.setCursorLocation(&*command->rect);
       }
       if (auto command = std::dynamic_pointer_cast<EmojiCommandProcessKeyEvent>(_command)) {
-        window.processKeyEvent(&*command->keyEvent);
+        window.processKeyEvent(&*command->keyEvent, command->action);
       }
     }
   });
-  emojiCommandProcessor.start(5);
 
   app.exec();
 }

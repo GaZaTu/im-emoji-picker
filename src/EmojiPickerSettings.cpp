@@ -49,6 +49,7 @@ void EmojiPickerSettings::writeDefaultsToDisk() {
   s.useSystemEmojiFontWidthHeuristics(s.useSystemEmojiFontWidthHeuristics());
   s.scaleFactor(s.scaleFactor());
   s.saveKaomojiInMRU(s.saveKaomojiInMRU());
+  s.customHotKeys(s.customHotKeys());
 }
 
 EmojiPickerSettings::EmojiPickerSettings() : QSettings(QSettings::IniFormat, QSettings::UserScope, QCoreApplication::organizationName(), QCoreApplication::applicationName(), nullptr) {
@@ -197,6 +198,42 @@ bool EmojiPickerSettings::saveKaomojiInMRU() const {
 }
 void EmojiPickerSettings::saveKaomojiInMRU(bool saveKaomojiInMRU) {
   setValue("saveKaomojiInMRU", saveKaomojiInMRU);
+}
+
+std::unordered_map<char, QKeySequence> EmojiPickerSettings::customHotKeys() {
+  std::unordered_map<char, QKeySequence> result;
+
+  int len = beginReadArray("customHotKeys");
+  for (int i = 0; i < len; i++) {
+    setArrayIndex(i);
+
+    auto keyValue = value("sourceKeyChr");
+    char key = 0;
+    if (keyValue.type() == QVariant::StringList) {
+      key = ',';
+    } else {
+      key = keyValue.toString().at(0).toLatin1();
+    }
+    auto target = QKeySequence{value("targetKeySeq").toString(), QKeySequence::PortableText};
+    result.emplace(key, target);
+  }
+  endArray();
+
+  return result;
+}
+void EmojiPickerSettings::customHotKeys(const std::unordered_map<char, QKeySequence>& customHotKeys) {
+  beginWriteArray("customHotKeys", customHotKeys.size());
+  int i = 0;
+  for (const auto& [key, target] : customHotKeys) {
+    setArrayIndex(i++);
+    if (key == ',') {
+      setValue("sourceKeyChr", QStringList{"", ""});
+    } else {
+      setValue("sourceKeyChr", QString::fromStdString(std::string{key}));
+    }
+    setValue("targetKeySeq", target.toString(QKeySequence::PortableText));
+  }
+  endArray();
 }
 
 EmojiPickerCache::EmojiPickerCache() : QSettings(path(), QSettings::IniFormat) {

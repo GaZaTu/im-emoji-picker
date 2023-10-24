@@ -32,7 +32,8 @@
 
 Fcitx5ImEmojiPickerModule::Fcitx5ImEmojiPickerModule(fcitx::Instance* instance) : _instance(instance) {
   resetInputMethodEngine = [this]() {
-    _active = false;
+    fcitx::InputContextEvent dummy{nullptr, (fcitx::EventType)0};
+    deactivate(dummy);
   };
 
   _eventHandlers.emplace_back(_instance->watchEvent(fcitx::EventType::InputContextKeyEvent, fcitx::EventWatcherPhase::Default, [this](fcitx::Event& _event) {
@@ -53,11 +54,15 @@ Fcitx5ImEmojiPickerModule::Fcitx5ImEmojiPickerModule(fcitx::Instance* instance) 
   _eventHandlers.emplace_back(_instance->watchEvent(fcitx::EventType::InputContextFocusOut, fcitx::EventWatcherPhase::Default, [this](fcitx::Event& _event) {
     auto& event = static_cast<fcitx::InputContextEvent&>(_event);
 
+    log_printf("[debug] Fcitx5ImEmojiPickerModule::_eventHandlers[InputContextFocusOut]\n");
+
     deactivate(event);
   }));
 
   _eventHandlers.emplace_back(_instance->watchEvent(fcitx::EventType::InputContextReset, fcitx::EventWatcherPhase::Default, [this](fcitx::Event& _event) {
     auto& event = static_cast<fcitx::InputContextEvent&>(_event);
+
+    log_printf("[debug] Fcitx5ImEmojiPickerModule::_eventHandlers[InputContextReset]\n");
 
     deactivate(event);
   }));
@@ -65,15 +70,17 @@ Fcitx5ImEmojiPickerModule::Fcitx5ImEmojiPickerModule(fcitx::Instance* instance) 
   _eventHandlers.emplace_back(_instance->watchEvent(fcitx::EventType::InputContextSwitchInputMethod, fcitx::EventWatcherPhase::Default, [this](fcitx::Event& _event) {
     auto& event = static_cast<fcitx::InputContextEvent&>(_event);
 
+    log_printf("[debug] Fcitx5ImEmojiPickerModule::_eventHandlers[InputContextSwitchInputMethod]\n");
+
     deactivate(event);
   }));
 
   _eventHandlers.emplace_back(_instance->watchEvent(fcitx::EventType::InputContextKeyEvent, fcitx::EventWatcherPhase::PreInputMethod, [this](fcitx::Event& _event) {
-    auto& event = static_cast<fcitx::KeyEvent&>(_event);
-
     if (!_active) {
       return;
     }
+
+    auto& event = static_cast<fcitx::KeyEvent&>(_event);
 
     event.filter();
     keyEvent(event);
@@ -89,6 +96,8 @@ void Fcitx5ImEmojiPickerModule::keyEvent(fcitx::KeyEvent& keyEvent) {
     return;
   }
 
+  QString _text = QString::fromStdString(keyEvent.key().toString());
+  _text = _text.right(1);
   QKeyEvent::Type _type = keyEvent.isRelease() ? QKeyEvent::KeyRelease : QKeyEvent::KeyPress;
   int _key = 0;
   switch (keyEvent.key().code()) {
@@ -125,6 +134,9 @@ void Fcitx5ImEmojiPickerModule::keyEvent(fcitx::KeyEvent& keyEvent) {
   case KEYCODE_F4: // FcitxKey_f4:
     _key = Qt::Key_F4;
     break;
+  default:
+    _key = QKeySequence{_text, QKeySequence::PortableText}[0];
+    break;
   }
   Qt::KeyboardModifiers _modifiers = Qt::NoModifier;
   if (keyEvent.key().states() & fcitx::KeyState::Super) {
@@ -136,8 +148,6 @@ void Fcitx5ImEmojiPickerModule::keyEvent(fcitx::KeyEvent& keyEvent) {
   if (keyEvent.key().states() & fcitx::KeyState::Shift) {
     _modifiers |= Qt::ShiftModifier;
   }
-  QString _text = QString::fromStdString(keyEvent.key().toString());
-  _text = _text.right(1);
 
   switch (keyEvent.key().code()) {
   case KEYCODE_SPACE: // FcitxKey_Space:
@@ -148,11 +158,11 @@ void Fcitx5ImEmojiPickerModule::keyEvent(fcitx::KeyEvent& keyEvent) {
     break;
   }
 
-  QKeyEvent* qevent = new QKeyEvent(_type, _key, _modifiers, _text);
+  QKeyEvent* qevent = createKeyEventWithUserPreferences(_type, _key, _modifiers, _text);
   EmojiAction action = getEmojiActionForQKeyEvent(qevent);
 
   if (action != EmojiAction::INVALID) {
-    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(qevent));
+    emojiCommandQueue.push(std::make_shared<EmojiCommandProcessKeyEvent>(qevent, action));
 
     keyEvent.accept();
   } else {
@@ -173,14 +183,15 @@ void Fcitx5ImEmojiPickerModule::activate(fcitx::InputContextEvent& event) {
 
   _active = true;
 
-  emojiCommandQueue.push(std::make_shared<EmojiCommandEnable>([this, inputContext{event.inputContext()}](const std::string& text) {
-    inputContext->commitString(text);
-
-    // usleep(10000);
-    // sendCursorLocation(inputContext);
-  }));
+  gui_set_active(true);
 
   sendCursorLocation(event);
+
+  emojiCommandQueue.push(std::make_shared<EmojiCommandEnable>([this, inputContext{event.inputContext()}](const std::string& text) {
+    log_printf("[debug] Fcitx5ImEmojiPickerModule::(lambda) commitString:%s program:%s\n", text.data(), inputContext->program().data());
+
+    inputContext->commitString(text);
+  }, false));
 }
 
 void Fcitx5ImEmojiPickerModule::deactivate(fcitx::InputContextEvent& event) {
@@ -193,6 +204,8 @@ void Fcitx5ImEmojiPickerModule::deactivate(fcitx::InputContextEvent& event) {
   _active = false;
 
   emojiCommandQueue.push(std::make_shared<EmojiCommandDisable>());
+
+  gui_set_active(false);
 }
 
 void Fcitx5ImEmojiPickerModule::reset(fcitx::InputContextEvent& event) {
@@ -225,8 +238,9 @@ void Fcitx5ImEmojiPickerModule::setConfig(const fcitx::RawConfig& config) {
 fcitx::AddonInstance* Fcitx5ImEmojiPickerModuleFactory::create(fcitx::AddonManager* manager) {
   log_printf("[debug] Fcitx5ImEmojiPickerModuleFactory::create\n");
 
-  static bool startedGUIThread = false;
-  if (!startedGUIThread) {
+  static bool gui_main_started = false;
+  if (!gui_main_started) {
+    gui_main_started = true;
     std::thread{gui_main, 0, nullptr}.detach();
   }
 

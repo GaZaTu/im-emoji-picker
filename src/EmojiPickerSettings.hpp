@@ -3,6 +3,7 @@
 #include "emojis.hpp"
 #include <QFontMetrics>
 #include <QSettings>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -53,6 +54,9 @@ public:
 
   bool saveKaomojiInMRU() const;
   void saveKaomojiInMRU(bool saveKaomojiInMRU);
+
+  std::unordered_map<char, QKeySequence> customHotKeys();
+  void customHotKeys(const std::unordered_map<char, QKeySequence>& customHotKeys);
 };
 
 class EmojiPickerCache : public QSettings {

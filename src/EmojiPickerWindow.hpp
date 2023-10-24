@@ -22,6 +22,26 @@
 
 extern std::function<void()> resetInputMethodEngine;
 
+enum class EmojiAction {
+  INVALID,
+  SELECT_ALL_IN_SEARCH,
+  COPY_SELECTED_EMOJI,
+  DISABLE,
+  COMMIT_EMOJI,
+  SWITCH_VIEW_MODE,
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT,
+  PAGE_UP,
+  PAGE_DOWN,
+  OPEN_SETTINGS,
+  CUT_SELECTION_IN_SEARCH,
+  CLEAR_SEARCH,
+  REMOVE_CHAR_IN_SEARCH,
+  INSERT_CHAR_IN_SEARCH,
+};
+
 struct EmojiCommand {
 public:
   virtual ~EmojiCommand() {
@@ -32,7 +52,9 @@ struct EmojiCommandEnable : public EmojiCommand {
 public:
   std::function<void(const std::string&)> commitText;
 
-  EmojiCommandEnable(std::function<void(const std::string&)> commitText) : EmojiCommand(), commitText{std::move(commitText)} {
+  bool resetPosition;
+
+  EmojiCommandEnable(std::function<void(const std::string&)>&& commitText, bool resetPosition = true) : EmojiCommand(), commitText{std::move(commitText)}, resetPosition{resetPosition} {
   }
 };
 
@@ -60,31 +82,15 @@ struct EmojiCommandProcessKeyEvent : public EmojiCommand {
 public:
   std::shared_ptr<QKeyEvent> keyEvent;
 
-  EmojiCommandProcessKeyEvent(QKeyEvent* keyEvent) : EmojiCommand(), keyEvent{keyEvent} {
+  EmojiAction action;
+
+  EmojiCommandProcessKeyEvent(QKeyEvent* keyEvent, EmojiAction action = EmojiAction::INVALID) : EmojiCommand(), keyEvent{keyEvent}, action{action} {
   }
 };
 
 extern ThreadsafeQueue<std::shared_ptr<EmojiCommand>> emojiCommandQueue;
 
-enum class EmojiAction {
-  INVALID,
-  SELECT_ALL_IN_SEARCH,
-  COPY_SELECTED_EMOJI,
-  DISABLE,
-  COMMIT_EMOJI,
-  SWITCH_VIEW_MODE,
-  UP,
-  DOWN,
-  LEFT,
-  RIGHT,
-  PAGE_UP,
-  PAGE_DOWN,
-  OPEN_SETTINGS,
-  CUT_SELECTION_IN_SEARCH,
-  CLEAR_SEARCH,
-  REMOVE_CHAR_IN_SEARCH,
-  INSERT_CHAR_IN_SEARCH,
-};
+QKeyEvent* createKeyEventWithUserPreferences(QEvent::Type _type, int _key, Qt::KeyboardModifiers _modifiers, const QString& _text);
 
 EmojiAction getEmojiActionForQKeyEvent(const QKeyEvent* event);
 
@@ -105,10 +111,10 @@ public:
 
 public Q_SLOTS:
   void reset();
-  void enable();
+  void enable(bool resetPosition = true);
   void disable();
   void setCursorLocation(const QRect* rect);
-  void processKeyEvent(const QKeyEvent* event);
+  void processKeyEvent(const QKeyEvent* event, EmojiAction action = EmojiAction::INVALID);
 
 protected:
   void changeEvent(QEvent* event) override;
@@ -180,5 +186,7 @@ private:
 
   bool _closing = false;
 };
+
+void gui_set_active(bool active);
 
 void gui_main(int argc, char** argv);
