@@ -47,6 +47,7 @@ void EmojiPickerSettings::writeDefaultsToDisk() {
   s.closeAfterFirstInput(s.closeAfterFirstInput());
   s.useSystemEmojiFont(s.useSystemEmojiFont());
   s.useSystemEmojiFontWidthHeuristics(s.useSystemEmojiFontWidthHeuristics());
+  s.systemEmojiFontOverride(s.systemEmojiFontOverride());
   s.scaleFactor(s.scaleFactor());
   s.saveKaomojiInMRU(s.saveKaomojiInMRU());
   s.customHotKeys(s.customHotKeys());
@@ -186,16 +187,26 @@ void EmojiPickerSettings::useSystemEmojiFontWidthHeuristics(bool useSystemEmojiF
   setValue("useSystemEmojiFontWidthHeuristics", useSystemEmojiFontWidthHeuristics);
 }
 
+std::string EmojiPickerSettings::systemEmojiFontOverride() const {
+  return value("systemEmojiFontOverride", "").toString().toStdString();
+}
+
+void EmojiPickerSettings::systemEmojiFontOverride(const std::string& systemEmojiFontOverride) {
+  setValue("systemEmojiFontOverride", QString::fromStdString(systemEmojiFontOverride));
+}
+
 std::string EmojiPickerSettings::scaleFactor() const {
   return value("scaleFactor", "").toString().toStdString();
 }
-void EmojiPickerSettings::scaleFactor(std::string scaleFactor) {
+
+void EmojiPickerSettings::scaleFactor(const std::string& scaleFactor) {
   setValue("scaleFactor", QString::fromStdString(scaleFactor));
 }
 
 bool EmojiPickerSettings::saveKaomojiInMRU() const {
   return value("saveKaomojiInMRU", false).toBool();
 }
+
 void EmojiPickerSettings::saveKaomojiInMRU(bool saveKaomojiInMRU) {
   setValue("saveKaomojiInMRU", saveKaomojiInMRU);
 }

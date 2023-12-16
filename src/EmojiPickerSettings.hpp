@@ -49,8 +49,11 @@ public:
   bool useSystemEmojiFontWidthHeuristics() const;
   void useSystemEmojiFontWidthHeuristics(bool useSystemEmojiFontWidthHeuristics);
 
+  std::string systemEmojiFontOverride() const;
+  void systemEmojiFontOverride(const std::string& systemEmojiFontOverride);
+
   std::string scaleFactor() const;
-  void scaleFactor(std::string scaleFactor);
+  void scaleFactor(const std::string& scaleFactor);
 
   bool saveKaomojiInMRU() const;
   void saveKaomojiInMRU(bool saveKaomojiInMRU);
