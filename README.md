@@ -143,6 +143,9 @@ saveKaomojiInMRU=false
 scaleFactor=
 ; `true` = Only skin tone neutral emojis are visible (hands for example)
 skinTonesDisabled=false
+; `not empty` = Use this (for example: Noto Color Emoji) instead of your system font to display emojis
+; (requires useSystemEmojiFont=true)
+systemEmojiFontOverride=
 ; `true` = Use your system emoji font instead of the bundled Twemoji images to display emojis
 ; (requires IMF restart)
 useSystemEmojiFont=false

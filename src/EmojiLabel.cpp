@@ -119,6 +119,11 @@ void EmojiLabel::setEmoji(const Emoji& emoji, int w, int h) {
     QFont textFont = font();
     textFont.setPixelSize(w);
 
+    std::string fontOverride = _settings.systemEmojiFontOverride();
+    if (!fontOverride.empty()) {
+      textFont.setFamily(QString::fromStdString(fontOverride));
+    }
+
     if (_settings.useSystemEmojiFontWidthHeuristics()) {
       if (defaultEmojiWidth == 0) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
