@@ -179,8 +179,9 @@ size=1
 
 - On Debian with Gnome i had to reboot after installing to be able to configure the emoji picker input method
 
-- On Sway and probably i3 too (maybe any tiling WM) you might need to configure a window rule to prevent the emoji picker from stealing focus (which creates a flickering mess)
-  - example: `no_focus [title="im-emoji-picker"]`
+- When using Wayland it seems like most window managers (Sway, KDE/KWin) force focus on new windows which conflicts with the way im-emoji-picker handles inputs. This results in the emoji picker either flickering or disappearing instantly. A workaround is to manually configure a window rule.
+  - Sway: `no_focus [title="im-emoji-picker"]`
+  - KDE/KWin: https://github.com/GaZaTu/im-emoji-picker/issues/13#issuecomment-1879469985
 
 - When using Wayland both Fcitx5 and IBus might not report the correct text cursor location so the emoji picker can open either in the top left corner or in the center of the screen
 
