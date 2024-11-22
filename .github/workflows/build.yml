@@ -20,7 +20,7 @@ jobs:
       options: --privileged
     strategy:
       matrix:
-        image: ['ubuntu:23.04', 'ubuntu:22.04', 'ubuntu:20.04', 'debian:12', 'debian:11', 'debian:10', 'opensuse/leap:15.4', 'fedora:40', 'fedora:39', 'fedora:38']
+        image: ['ubuntu:25.04', 'ubuntu:24.04', 'ubuntu:22.04', 'debian:12', 'debian:11', 'opensuse/leap:15.5', 'fedora:42', 'fedora:41', 'fedora:40']
       fail-fast: false
 
     steps:
