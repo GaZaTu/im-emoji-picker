@@ -118,7 +118,7 @@ jobs:
 
       - name: Upload Fcitx5 artifact .deb (ubuntu / debian)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-fcitx5.deb
           path: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-fcitx5.deb
@@ -126,7 +126,7 @@ jobs:
 
       - name: Upload Fcitx5 artifact .rpm (opensuse / fedora)
         if: startsWith(matrix.image, 'opensuse') || startsWith(matrix.image, 'fedora')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-fcitx5.rpm
           path: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-fcitx5.rpm
@@ -134,7 +134,7 @@ jobs:
 
       - name: Upload IBus artifact .deb (ubuntu / debian)
         if: startsWith(matrix.image, 'ubuntu') || startsWith(matrix.image, 'debian')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.deb
           path: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.deb
@@ -142,7 +142,7 @@ jobs:
 
       - name: Upload IBus artifact .rpm (opensuse / fedora)
         if: startsWith(matrix.image, 'opensuse') || startsWith(matrix.image, 'fedora')
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.rpm
           path: ${{env.ARTIFACT_NAME_WITH_DISTRO}}-ibus.rpm
