@@ -6,19 +6,19 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QDesktopWidget>
+#include <QFile>
 #include <QKeyEvent>
 #include <QScreen>
 #include <QStyle>
+#include <QTextStream>
 #include <QTimer>
 #include <algorithm>
+#include <condition_variable>
 #include <exception>
 #include <memory>
-#include <vector>
-#include <QTextStream>
-#include <QFile>
-#include <unistd.h>
 #include <mutex>
-#include <condition_variable>
+#include <unistd.h>
+#include <vector>
 
 Emoji convertKaomojiToEmoji(const Kaomoji& kaomoji) {
   return Emoji{kaomoji.name, kaomoji.text, -1};
@@ -98,8 +98,7 @@ EmojiPickerWindow::EmojiPickerWindow() : QMainWindow() {
     _searchCompletion->setStyleSheet(_searchCompletion->styleSheet() + QString("background: #00000000;"));
     QColor _searchCompletionTextColor = _searchEdit->palette().text().color();
     _searchCompletionTextColor.setAlphaF(0.6);
-    _searchCompletion->setStyleSheet(
-        _searchCompletion->styleSheet() + QString("color: #%1;").arg(_searchCompletionTextColor.rgba(), 0, 16));
+    _searchCompletion->setStyleSheet(_searchCompletion->styleSheet() + QString("color: #%1;").arg(_searchCompletionTextColor.rgba(), 0, 16));
   } else {
     _searchCompletion->setStyleSheet(_searchCompletion->styleSheet() + QString("background: #00000000;"));
     _searchCompletion->setStyleSheet(_searchCompletion->styleSheet() + QString("color: rgba(255, 255, 255, 155);"));
@@ -341,8 +340,7 @@ void EmojiPickerWindow::updateSearchCompletion() {
   _searchCompletion->setText(completion);
 }
 
-void EmojiPickerWindow::addItemToEmojiList(
-    QLayoutItem* emojiLayoutItem, EmojiLabel* label, int colspan, int& row, int& column) {
+void EmojiPickerWindow::addItemToEmojiList(QLayoutItem* emojiLayoutItem, EmojiLabel* label, int colspan, int& row, int& column) {
   if (colspan == 0) {
     if (label->hasRealEmoji()) {
       colspan = 1;
@@ -763,8 +761,7 @@ void EmojiPickerWindow::processKeyEvent(const QKeyEvent* event, EmojiAction acti
 
   case EmojiAction::COMMIT_EMOJI:
     if (selectedEmojiLabel()) {
-      bool closeAfter = (((event->modifiers() & Qt::ShiftModifier) && !_settings.closeAfterFirstInput()) ||
-          (!(event->modifiers() & Qt::ShiftModifier) && _settings.closeAfterFirstInput()));
+      bool closeAfter = (((event->modifiers() & Qt::ShiftModifier) && !_settings.closeAfterFirstInput()) || (!(event->modifiers() & Qt::ShiftModifier) && _settings.closeAfterFirstInput()));
 
       commitEmoji(selectedEmojiLabel()->emoji(), selectedEmojiLabel()->hasRealEmoji(), closeAfter);
     }
@@ -885,9 +882,9 @@ void loadScaleFactorFromSettings() {
   }
 }
 
-std::mutex gui_mutex;
-std::condition_variable gui_condition;
-bool gui_is_active = false;
+static std::mutex gui_mutex;
+static std::condition_variable gui_condition;
+static bool gui_is_active = false;
 
 void gui_set_active(bool active) {
   if (!active) {
@@ -926,7 +923,9 @@ void gui_main(int argc, char** argv) {
   QObject::connect(&commandProcessor, &QTimer::timeout, [&commandProcessor, &window]() {
     // block the entire Qt main thread if gui_is_active == false
     std::unique_lock<decltype(gui_mutex)> lock{gui_mutex};
-    gui_condition.wait(lock, []() { return gui_is_active; });
+    gui_condition.wait(lock, []() {
+      return gui_is_active;
+    });
     lock.unlock();
 
     std::shared_ptr<EmojiCommand> _command;

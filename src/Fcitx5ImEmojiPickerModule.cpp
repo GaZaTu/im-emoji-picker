@@ -3,8 +3,10 @@
 #include "Fcitx5ImEmojiPickerModule.hpp"
 #include "EmojiPickerWindow.hpp"
 #include "logging.hpp"
+#include <QCoreApplication>
 #include <QKeyEvent>
 #include <QProcess>
+#include <csignal>
 #include <fcitx-config/configuration.h>
 #include <fcitx-config/enum.h>
 #include <fcitx-config/iniparser.h>
@@ -235,6 +237,23 @@ void Fcitx5ImEmojiPickerModule::setConfig(const fcitx::RawConfig& config) {
   safeSaveAsIni(_config, CONFIG_FILE);
 }
 
+void catchUnixSignals(const std::vector<int>& signallist, void (*func)(int)) {
+  sigset_t blocking_mask;
+  sigemptyset(&blocking_mask);
+  for (auto sig : signallist) {
+    sigaddset(&blocking_mask, sig);
+  }
+
+  struct sigaction sa;
+  sa.sa_handler = func;
+  sa.sa_mask = blocking_mask;
+  sa.sa_flags = 0;
+
+  for (auto sig : signallist) {
+    sigaction(sig, &sa, nullptr);
+  }
+}
+
 fcitx::AddonInstance* Fcitx5ImEmojiPickerModuleFactory::create(fcitx::AddonManager* manager) {
   log_printf("[debug] Fcitx5ImEmojiPickerModuleFactory::create\n");
 
@@ -242,6 +261,11 @@ fcitx::AddonInstance* Fcitx5ImEmojiPickerModuleFactory::create(fcitx::AddonManag
   if (!gui_main_started) {
     gui_main_started = true;
     std::thread{gui_main, 0, nullptr}.detach();
+
+    catchUnixSignals({SIGQUIT, SIGINT, SIGTERM}, [](int signal) {
+      gui_set_active(true);
+      QCoreApplication::quit();
+    });
   }
 
   return new Fcitx5ImEmojiPickerModule(manager->instance());
