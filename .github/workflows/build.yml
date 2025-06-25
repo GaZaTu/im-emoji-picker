@@ -100,7 +100,7 @@ jobs:
           rm -rf build
           mkdir -p build
           cd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DCPACK_GENERATOR=${{env.CPACK_GENERATOR}} -DPACKAGE_VERSION=${{env.VERSION}} -DONLY_IBUS=1 ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DCPACK_GENERATOR=${{env.CPACK_GENERATOR}} -DPACKAGE_VERSION=${{env.VERSION}} -DONLY_IBUS=1 -DCXX_STANDARD_OVERRIDE=17 ..
           make -j$(nproc)
           make package
 
