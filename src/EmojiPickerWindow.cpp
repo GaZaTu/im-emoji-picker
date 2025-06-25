@@ -14,7 +14,6 @@
 #include <QTimer>
 #include <algorithm>
 #include <condition_variable>
-#include <exception>
 #include <memory>
 #include <mutex>
 #include <unistd.h>
@@ -128,11 +127,11 @@ EmojiPickerWindow::EmojiPickerWindow() : QMainWindow() {
 
   setCentralWidget(_centralWidget);
 
-  _mruModeLabel->setEmoji({"favorites", u8"⭐"}, 14, 14);
+  _mruModeLabel->setEmoji({"favorites", "⭐"}, 14, 14);
   _mruModeLabel->setHighlighted(_mode == ViewMode::MRU);
-  _listModeLabel->setEmoji({"emoji list", u8"🗃"}, 14, 14);
+  _listModeLabel->setEmoji({"emoji list", "🗃"}, 14, 14);
   _listModeLabel->setHighlighted(_mode == ViewMode::LIST);
-  _kaomojiModeLabel->setEmoji({"kaomoji list", u8"ヽ(o^ ^o)ﾉ"}, 18, 18);
+  _kaomojiModeLabel->setEmoji({"kaomoji list", "ヽ(o^ ^o)ﾉ"}, 18, 18);
   _kaomojiModeLabel->setHighlighted(_mode == ViewMode::KAOMOJI);
 
   _statusBar->setFixedHeight(20);

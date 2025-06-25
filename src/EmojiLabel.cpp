@@ -26,7 +26,7 @@ EmojiLabel::EmojiLabel(QWidget* parent, const EmojiPickerSettings& settings, con
 }
 
 void getCodepointsByEmojiStr(const std::string& emojiStr, const std::string& separator, std::stringstream& emojiHexCodeStream) {
-  const utf8_int8_t* ptr = emojiStr.data();
+  const utf8_int8_t* ptr = (const utf8_int8_t*)emojiStr.data();
   utf8_int32_t codepoint = 0;
 
   while (true) {
@@ -72,9 +72,9 @@ int invalidEmojiWidth = 0;
 bool fontSupportsEmoji(const QFontMetrics& metrics, int textWidth) {
   if (invalidEmojiWidth == 0) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-    invalidEmojiWidth = metrics.horizontalAdvance(u8"\U0001FFFD");
+    invalidEmojiWidth = metrics.horizontalAdvance("\U0001FFFD");
 #else
-    invalidEmojiWidth = metrics.width(u8"\U0001FFFD");
+    invalidEmojiWidth = metrics.width("\U0001FFFD");
 #endif
   }
 
@@ -127,9 +127,9 @@ void EmojiLabel::setEmoji(const Emoji& emoji, int w, int h) {
     if (_settings.useSystemEmojiFontWidthHeuristics()) {
       if (defaultEmojiWidth == 0) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-        defaultEmojiWidth = fontMetrics().horizontalAdvance(u8"\U0001F600");
+        defaultEmojiWidth = fontMetrics().horizontalAdvance("\U0001F600");
 #else
-        defaultEmojiWidth = fontMetrics().width(u8"\U0001F600");
+        defaultEmojiWidth = fontMetrics().width("\U0001F600");
 #endif
       }
 

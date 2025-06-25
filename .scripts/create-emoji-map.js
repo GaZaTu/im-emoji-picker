@@ -164,12 +164,12 @@ std::string Emoji::nameByLocale(const std::string& localeKey) const {
 }
 
 bool Emoji::isGenderVariation() const {
-  const char* MALE_SIGN   = u8"\\U00002642";
-  const char* FEMALE_SIGN = u8"\\U00002640";
-  const char* BOY         = u8"\\U0001F466";
-  const char* GIRL        = u8"\\U0001F467";
-  const char* MAN         = u8"\\U0001F468";
-  const char* WOMAN       = u8"\\U0001F469";
+  const char* MALE_SIGN   = "\\U00002642";
+  const char* FEMALE_SIGN = "\\U00002640";
+  const char* BOY         = "\\U0001F466";
+  const char* GIRL        = "\\U0001F467";
+  const char* MAN         = "\\U0001F468";
+  const char* WOMAN       = "\\U0001F469";
 
   if (
     code == MALE_SIGN   ||
@@ -193,11 +193,11 @@ bool Emoji::isGenderVariation() const {
 }
 
 bool Emoji::isSkinToneVariation() const {
-  const char* LIGHT        = u8"\\U0001F3FB";
-  const char* LIGHT_MEDIUM = u8"\\U0001F3FC";
-  const char* MEDIUM       = u8"\\U0001F3FD";
-  const char* DARK_MEDIUM  = u8"\\U0001F3FE";
-  const char* DARK         = u8"\\U0001F3FF";
+  const char* LIGHT        = "\\U0001F3FB";
+  const char* LIGHT_MEDIUM = "\\U0001F3FC";
+  const char* MEDIUM       = "\\U0001F3FD";
+  const char* DARK_MEDIUM  = "\\U0001F3FE";
+  const char* DARK         = "\\U0001F3FF";
 
   if (
     code == LIGHT        ||
@@ -227,7 +227,7 @@ Emoji::operator bool() const {
 }
 
 const Emoji emojis[] = {
-  ${emojis.map(emoji => `{"${emoji.name}", u8"${emoji.code.split(' ').map(codepoint => `\\U${codepoint.padStart(8, '0')}`).join('')}", ${Math.trunc(emoji.version)}}`).join(',\n  ')}
+  ${emojis.map(emoji => `{"${emoji.name}", "${emoji.code.split(' ').map(codepoint => `\\U${codepoint.padStart(8, '0')}`).join('')}", ${Math.trunc(emoji.version)}}`).join(',\n  ')}
 };
 `
 
@@ -295,7 +295,7 @@ std::string Emoji::nameByLocaleId<Emoji::hashLocaleKey("${localeKey}")>() const 
 #include <unordered_map>
 
 const std::unordered_map<std::string, std::string> EmojiTranslations_${localeKey} = {
-  ${emojisByLocale.map(emoji => `{u8"${emoji.code.split(' ').map(codepoint => `\\U${codepoint.padStart(8, '0')}`).join('')}", u8"${emoji.name}"}`).join(',\n  ')}
+  ${emojisByLocale.map(emoji => `{"${emoji.code.split(' ').map(codepoint => `\\U${codepoint.padStart(8, '0')}`).join('')}", "${emoji.name}"}`).join(',\n  ')}
 };
 
 template <>
