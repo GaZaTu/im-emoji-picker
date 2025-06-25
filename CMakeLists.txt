@@ -96,7 +96,7 @@ if (NOT SKIP_IBUS)
   add_executable(ibusimemojipicker ${SRC_FILES_IBUS})
 
   set_target_properties(ibusimemojipicker PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
   )
@@ -134,7 +134,7 @@ if (NOT SKIP_FCITX5)
   add_library(fcitx5imemojipicker SHARED ${SRC_FILES_FCITX5})
 
   set_target_properties(fcitx5imemojipicker PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS OFF
     PREFIX ""
